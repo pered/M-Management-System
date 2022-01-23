@@ -1,5 +1,10 @@
+from mms import Start
+
 def main() -> None:
-    return
+    mms = Start()
+    mms.begin()
+    mms.run()
+    
 
 
 if __name__ == "__main__":
