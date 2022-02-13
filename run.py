@@ -1,10 +1,15 @@
-from mms import Start
+from mms import Bot
+from telegram.ext import CallbackContext
+from telegram import Update
+
+def message(update:Update, context:CallbackContext):
+    update.message.reply_text("Hi")
+    
 
 def main() -> None:
-    mms = Start()
-    mms.begin()
-    mms.run()
-    
+    mms_Bot = Bot()
+    mms_Bot.handler()
+    mms_Bot.start()
 
 
 if __name__ == "__main__":
