@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['class_exercise1.py', 'class_exercise_cards']
+recent_files = ['run.py', 'mms/bot/bot.py']
 
 [main]
 version = 0.2.0

@@ -1,6 +1,12 @@
 import logging
-from telegram.ext import Updater, CommandHandler, CallbackContext
-from telegram import Update
+from typing import Optional,List
+from telegram.ext import Updater, CommandHandler, CallbackContext, ChatMemberHandler
+from telegram import Update, Chat
+
+class HandlerList:
+    handlers: List = []
+    def __init__(self, handle:CommandHandler,ChatMemberHandler):
+        pass
 
 class Bot:
     updater:Updater = None
@@ -16,9 +22,10 @@ class Bot:
     
     def message(self,update:Update, context:CallbackContext):
         update.message.reply_text("Hi")
+
     
-    def event_handler(self) -> None:
-        Bot.dispatcher.add_handler(CommandHandler("start", self.message))
+    def declare_handler(self, func:CommandHandler) -> None:
+        Bot.dispatcher.add_handler(func)
     
     def start(self):
         Bot.updater.start_polling()

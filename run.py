@@ -1,4 +1,4 @@
-from mms import Bot
+from mms import Bot, Customer
 from telegram.ext import CallbackContext
 from telegram import Update
 
@@ -8,7 +8,7 @@ def message(update:Update, context:CallbackContext):
 
 def main() -> None:
     mms_Bot = Bot()
-    mms_Bot.handler()
+    mms_Customer = Customer()
     mms_Bot.start()
 
 
