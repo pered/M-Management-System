@@ -1,2 +1,3 @@
 from .bot.bot import Bot
-from .customer import Customer
+from .bot.bot import HandlerList
+from .user import Customer
