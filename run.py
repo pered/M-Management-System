@@ -1,10 +1,14 @@
+import logging
 from mms import Bot, Customer
 from telegram.ext import CallbackContext
 from telegram import Update
-
     
 
 def main() -> None:
+
+    logging.basicConfig(level=logging.INFO, 
+             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
     mms_Bot = Bot()
     mms_Customer = Customer()
     mms_Bot.load()

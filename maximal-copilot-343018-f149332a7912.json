@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "maximal-copilot-343018",
+  "private_key_id": "f149332a7912512add53bd5f3f54ae564708e377",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC9X1SxIs/MJNcm\nofeXB5zTVeteIxDuB8BmdILcGroLd8BM5wZZ61zwDD07XekSd6fy7kRQ0LB7bRWl\nqLHxBvru6CXJ9U5p9vsoQnSBqmrS/O6tKn6kiXKqzw68gmSIc7YIGbOmcQIFx5lb\nEpel38aTpKqMOiZlqaiUUroxkGXHUkHUey2xLY1MxGfeSwKsUtuQ2Y5YINUTPef9\nrSa3EziFDdWEt7Qb8v/Lzf+nWk8comJab0bgDYsvizztJ+5LzAJBET4lTJSM4Et1\nP7cnderXg+UwPkWY636VUI3zEhiyrRK/ewXKbQ1hKLCya8lcf5jSkQl4i0adr74Z\nGGR2aqJVAgMBAAECggEAILrcSW1J2u+3G988iqbvLPuZnYCUCX/fehXDFEWuSBMf\ncmsvhtUOEBMddihKAz4ZEfyqZAldp0d4SVR5xL2/GxGWjmxObDQavp+VwV9x7Rt4\nKQfCMa/r2KfG1T/4HjlZidbfXPIFNniEAeCZwzqE+LmqHGhkgIetMk2GDtD1Nliu\nD/k4c3aLShiwESqGMhv2ptbMRObdyFI0GcRTelWPUFkMP7RvRxobimmEYcZz9m+M\n61fH8oQlZabLXtf8b8n+H2CghXoCOz/jxSUW/faGP+hybIyaSVXKjklB1JLTwX22\nifKuHVE404niqj1Az7gb8FnNY5IcOKnP3Ru0ytLjlQKBgQDjSfqickZE5c9NAOlR\nBoLHp64TDEV/aNIIEGEZTvAApO9F5fQACDsaOgGec3C4zidNfTPJ+aNvZ2vT7y1c\nazHGHpV/+LxVqKyJK7pL4lcyGcmBqrf4C1pJpQ7lKqgmFJHOeoxPryJ4phnR8Ci6\nlplkyVY185P4JyVGhxaB5FRvrwKBgQDVSzabXgZjH+DUCXZpJwSyr7VSZUHQaCIk\nIxPWpw66K+odD93JBBHg/g4hWUaBVeHcud5pNT6DbxIqX4+vGviHF+ltWd3AKZtQ\nzrYTWfgL+Ggi/wa5ipUHX5eyuyem5cNk0noLVaOgCVqfp4bnhBZZ0HZXF9xCCaYv\nuVez6RWrOwKBgQCnf7hmCMMCOT25KMfIv3yXeFoPjYaV64CFEtUL2qGCSApRP7K+\nZ1Ju9HqG89oJR1utfmwxF3i7O8M6D1QlfJXUxGs2QO9CTSjBeekzzRynPlvC5DXp\nZSxng21jszjxv0zolmVav90ufnIexdauExf+L2YKInRUdzzAKgOLO+KB3wKBgQDN\n++wJkX1Dn1amD1leZYMg+ZV3tDgiB17pXULcastLOfvHAzqh1Z9alJ+azzfK0eDl\nJE9JdVUg41Q8vbrqVXasKIiSxVXlLYlEOc0W1S06ijQvj/CzoMUZsNS0lA/QG1Ze\n+PFKHvN9K2tsggJDdYmMRUj0BSP+Vok6z5iGM9RsXwKBgQDP2e8CY1WQKVNZknu9\nKvuay4fvhKN9iBk2Y5TZcA/4AhZfmeQH+0HrXKNCW3ES0c9Ii6wF8alQ+eOuS1X5\nDUr5bq72qMEj8iQr/0j5tWBR2xHEtmxgHp9+Kqwnnziav619QaxF+DOyyIkeg54t\n8HSvdsrblWtYjOMsjFGoE+oGVg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "mms-manager@maximal-copilot-343018.iam.gserviceaccount.com",
+  "client_id": "106504407880192662271",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mms-manager%40maximal-copilot-343018.iam.gserviceaccount.com"
+}
