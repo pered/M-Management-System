@@ -1,4 +1,4 @@
-from customers import User
+from .customers import User
 
 class RetailBusiness(User):
     def __init__(self):

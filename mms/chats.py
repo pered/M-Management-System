@@ -1,6 +1,7 @@
 from telegram import Update, Chat, ChatMemberUpdated
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler
 from mms import HandlerList
+
         
 
 class Chats:
@@ -19,11 +20,17 @@ class Chats:
         """Send a message when the command /start is issued."""
         data:Chat = update._effective_chat
         update.message.reply_text(data.id)
+    
+    def print_userId(self,update: Update, context: CallbackContext) -> None:
+        """Send a message when the command /start is issued."""
+        data = update.message.from_user.id
+        update.message.reply_text(data)
         
 
 
     def load(self):
         HandlerList(CommandHandler("help", self.send_help))
         HandlerList(CommandHandler("chat_id", self.print_chatId))
+        HandlerList(CommandHandler("user_id", self.print_userId))
         #HandlerList(ChatMemberHandler(self.get_membersChange, ChatMemberHandler.CHAT_MEMBER))
         
