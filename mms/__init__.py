@@ -1,3 +1,4 @@
 from .bot.bot import Bot
 from .bot.bot import HandlerList
-from .user import Customer
+from .chats import Chats
+from .customers.retail import RetailBusiness

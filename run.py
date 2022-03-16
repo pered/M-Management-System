@@ -1,5 +1,5 @@
 import logging
-from mms import Bot, Customer
+from mms import Bot, Chats
 from telegram.ext import CallbackContext
 from telegram import Update
     
@@ -10,7 +10,7 @@ def main() -> None:
              format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
     mms_Bot = Bot()
-    mms_Customer = Customer()
+    mms_Chats = Chats()
     mms_Bot.load()
     mms_Bot.start()
 
