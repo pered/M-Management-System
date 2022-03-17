@@ -1,7 +1,7 @@
 from telegram import Update, Chat, ChatMemberUpdated
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler
 from mms import HandlerList
-
+from .users import RetailUser
         
 
 class Chats:
