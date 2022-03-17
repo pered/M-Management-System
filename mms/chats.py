@@ -1,12 +1,14 @@
+from typing import Optional
 from telegram import Update, Chat, ChatMemberUpdated
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler
 from mms import HandlerList
-from .users import RetailUser
-        
+from .userslist import UserList
 
 class Chats:
+    users: Optional[UserList] = UserList()
     def __init__(self):
         super()
+        Chats.users.load()
         self.load()
 
     def send_help(self,update: Update, context: CallbackContext) -> None:

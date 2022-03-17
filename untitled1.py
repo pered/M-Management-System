@@ -9,14 +9,17 @@ from googleapiclient.discovery import build
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '1mCJyUwHad0RBj14d8pvYC1EaCd4mHNwzkDKiUYTcLy4'
-SAMPLE_RANGE_NAME = 'Coffee!A2:E'
+# SAMPLE_SPREADSHEET_ID = '1mCJyUwHad0RBj14d8pvYC1EaCd4mHNwzkDKiUYTcLy4'
+# SAMPLE_RANGE_NAME = 'Coffee!A2:E'
+
+SAMPLE_SPREADSHEET_ID = "10bzoC_M0GOyEB8CH5zY9EXE7tGtxnC8vwJO3tTBDkyA"
+SAMPLE_RANGE_NAME = 'Admin!A1:E'
 
 creds = None
 creds = service_account.Credentials.from_service_account_file('maximal-copilot-343018-f149332a7912.json',scopes=SCOPES)
 
 def main():
-    service = build('sheets','v4', credentials=creds)
+    service = 
     sheet = service.spreadsheets()
     result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME).execute()
     print(result)
