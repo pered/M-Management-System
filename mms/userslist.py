@@ -4,7 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from typing import List, Optional
-import pandas as pd
+from pandas import DataFrame
 from .users import Admin, RetailUser
 
 class UserList:
@@ -34,7 +34,7 @@ class UserList:
                             UserList.SAMPLE_SPREADSHEET_ID, range=\
                                 UserList.RETAIL_SAMPLE_RANGE_NAME).execute() 
             
-        admin_df = pd.DataFrame.from_dict(adminResults['values'])
+        admin_df = DataFrame.from_dict(adminResults['values'])
         
-        retail_df = pd.DataFrame.from_dict(retailResults['values'])
+        retail_df = DataFrame.from_dict(retailResults['values'])
         
