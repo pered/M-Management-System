@@ -3,6 +3,8 @@ import os.path
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
+import logging
+
 from typing import List, Optional
 from pandas import DataFrame
 from .users import Admin, RetailUser
@@ -34,7 +36,12 @@ class UserList:
                             UserList.SAMPLE_SPREADSHEET_ID, range=\
                                 UserList.RETAIL_SAMPLE_RANGE_NAME).execute() 
             
-        admin_df = DataFrame.from_dict(adminResults['values'])
+        #Creating DataFrames for creation of user objects
+        admin_df = DataFrame(adminResults['values'][1:], columns = adminResults['values'][0])
+        retail_df = DataFrame(retailResults['values'][1:], columns = retailResults['values'][0])
         
-        retail_df = DataFrame.from_dict(retailResults['values'])
+        logging.getLogger('Loading Object List')
+        UserList.adminList = [Admin(x[1]) for x in admin_df.iterrows()]
+        UserList.retailList = [RetailUser(x[1]) for x in retail_df.iterrows()]
+        
         

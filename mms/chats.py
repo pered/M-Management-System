@@ -5,11 +5,10 @@ from mms import HandlerList
 from .userslist import UserList
 
 class Chats:
-    users: Optional[UserList] = UserList()
+    users:UserList = UserList()
     def __init__(self):
-        super()
+        super().__init__()
         Chats.users.load()
-        self.load()
 
     def send_help(self,update: Update, context: CallbackContext) -> None:
         update.message.reply_text("Remind me to finish this!")

@@ -1,16 +1,10 @@
-from typing import Optional
-from pandas import DataFrame
+from typing import Optional, Tuple
+from pandas import Series
 
 class User:
-    def __init__(self):
-        self.businessName:str = None
-        self.firstName:str = None
-        self.lastName:str = None
-        self.userID:str = None
-        self.access = None
-        
-    def sheetCreate(self, sheet_df:DataFrame) -> None:
-        sheet_df.loc["MMS UserID"]
-        
-    def get_userID(self) -> str:
-        return self.userID
+    def __init__(self, sheet_df:Series):
+        self.firstName = sheet_df['First Name']
+        self.lastName = sheet_df['Last Name']
+        self.mmsUserID = sheet_df['MMS UserID']
+        self.telegramUserID = sheet_df['Telegram UserID']
+        self.access = sheet_df['Access']
