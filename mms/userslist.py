@@ -9,7 +9,7 @@ from typing import List, Optional
 from pandas import DataFrame
 from .users import Admin, RetailUser
 
-class UserList:
+class UserList: 
     adminList: List[Admin] = []
     retailList: List[RetailUser] = []
     
@@ -27,7 +27,8 @@ class UserList:
     def __init__(self) -> None:
         pass
     
-    def load(self) -> None:
+    @classmethod
+    def load(cls) -> None:
         adminResults = UserList.adminSheet.values().get(spreadsheetId=\
                             UserList.SAMPLE_SPREADSHEET_ID, range=\
                                 UserList.ADMIN_SAMPLE_RANGE_NAME).execute()
@@ -37,11 +38,9 @@ class UserList:
                                 UserList.RETAIL_SAMPLE_RANGE_NAME).execute() 
             
         #Creating DataFrames for creation of user objects
+    
         admin_df = DataFrame(adminResults['values'][1:], columns = adminResults['values'][0])
         retail_df = DataFrame(retailResults['values'][1:], columns = retailResults['values'][0])
         
-        logging.getLogger('Loading Object List')
-        UserList.adminList = [Admin(x[1]) for x in admin_df.iterrows()]
-        UserList.retailList = [RetailUser(x[1]) for x in retail_df.iterrows()]
-        
-        
+        cls.adminList = [Admin(x[1]) for x in admin_df.iterrows()]
+        cls.retailList = [RetailUser(x[1]) for x in retail_df.iterrows()]
