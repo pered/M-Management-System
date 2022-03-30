@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional,List
 from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler
 from mms import HandlerList
@@ -21,7 +21,8 @@ class Chats:
     
     def reload_Users(self, update: Update, context: CallbackContext) -> None:
         #Check if user is a super admin to perform command
-        if Chats.users.search(update.message.from_user.id, "Telegram UserID").access == "SuperAdmin":
+        user:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        if [True for x in user if x.access == "SuperAdmin"]:
             Chats.users.load()
             update.message.reply_text("Reloaded all users!")
         else:
@@ -35,7 +36,6 @@ class Chats:
     def print_userId(self,update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
         print(update.message.chat.id)
-        print(Bot.get_chat(update.message.chat.id).to_json())
         
     def order(self, update: Update, context: CallbackContext) -> None:
         """Sends a message with three inline buttons attached."""

@@ -41,16 +41,28 @@ class UserList:
         admin_df = DataFrame(adminResults['values'][1:], columns = adminResults['values'][0])
         wholesale_df = DataFrame(wholesaleResults['values'][1:], columns = wholesaleResults['values'][0])
         
-        cls.userList += [Admin(x[1]) for x in admin_df.iterrows()]
-        cls.userList += [WholesaleUser(x[1]) for x in wholesale_df.iterrows()]
+        ##Check this ##
+        cls.userList += [Admin(x) for x in admin_df.iterrows()]
+        cls.userList += [WholesaleUser(x) for x in wholesale_df.iterrows()]
     
     @classmethod
-    def search(cls, value, attribute:str) -> User:
+    def search(cls, value, attribute:str) -> List:
         '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
             Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
         if attribute  == "Telegram UserID":
             try:
-                return cls.userList[[x.telegramUserID for x in cls.userList].index(value)]
+                return [x for x in cls.userList if x.telegramUserID == value]
             except:
                 logging.info("User is not in database")
-                return User()
+                return []
+        elif attribute  == "Access":
+            try:
+                return [x for x in cls.userList if x.access == "Register"]
+            except:
+                logging.info("User is not in database")
+                pass
+            
+    @classmethod
+    def assign_User(cls):
+        user_toAssign:List = cls.search("Register", "Access")
+        pass
