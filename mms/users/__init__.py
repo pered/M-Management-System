@@ -1,2 +1,3 @@
-from .retail import RetailUser
+from .wholesale import WholesaleUser
 from .admin import Admin
+from .user import User

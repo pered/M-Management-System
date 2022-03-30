@@ -1,5 +1,5 @@
 from typing import Optional
-from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler
 from mms import HandlerList
 from .userslist import UserList
@@ -14,10 +14,18 @@ class Chats:
         update.message.reply_text("Remind me to finish this!")
     
     def print_RegisteredUsers(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text([x.__dict__ for x in Chats.users.adminList])
+        update.message.reply_text([x.__dict__ for x in Chats.users.userList])
+    
+    def check_userStatus(self,update: Update, context: CallbackContext) -> None:
+        pass
     
     def reload_Users(self, update: Update, context: CallbackContext) -> None:
-        Chats.users.load()
+        #Check if user is a super admin to perform command
+        if Chats.users.search(update.message.from_user.id, "Telegram UserID").access == "SuperAdmin":
+            Chats.users.load()
+            update.message.reply_text("Reloaded all users!")
+        else:
+            update.message.reply_text("You are not worthy...")
     
     def print_chatId(self,update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
@@ -26,11 +34,17 @@ class Chats:
     
     def print_userId(self,update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
-        data = update.message.from_user.id
-        update.message.reply_text(data)
+        print(update.message.chat.id)
+        print(Bot.get_chat(update.message.chat.id).to_json())
         
-    def start(self, update: Update, context: CallbackContext) -> None:
+    def order(self, update: Update, context: CallbackContext) -> None:
         """Sends a message with three inline buttons attached."""
+        
+        #Check what user is ordering, whether it's an Admin or Wholesale User
+        
+        #Check what chat it is and whether user corresponds with business
+    
+    
         keyboard = [
                     [InlineKeyboardButton("Coffee", callback_data='1'),
                     InlineKeyboardButton("Sugar", callback_data='2'),
@@ -61,9 +75,8 @@ class Chats:
         HandlerList(CommandHandler("help", self.send_help))
         HandlerList(CommandHandler("chat_id", self.print_chatId))
         HandlerList(CommandHandler("user_id", self.print_userId))
-        HandlerList(CommandHandler("print_users", self.print_RegisteredUsers))
         HandlerList(CommandHandler("reload_users", self.reload_Users))
-        HandlerList(CommandHandler('start', self.start))
+        HandlerList(CommandHandler('order', self.order))
         HandlerList(CallbackQueryHandler(self.button))
         #HandlerList(ChatMemberHandler(self.get_membersChange, ChatMemberHandler.CHAT_MEMBER))
         
