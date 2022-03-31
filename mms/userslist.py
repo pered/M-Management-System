@@ -67,24 +67,24 @@ class UserList:
         cls.userList += [WholesaleUser(x[1]) for x in wholesale_df.iterrows()] 
     
     @classmethod
-    def search(cls, value, attribute:str) -> List:
+    def search(cls, value, attribute:str, userList_toSearch:List = userList) -> List:
         '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
             Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
         if attribute  == "Telegram UserID":
             try:
-                return [x for x in cls.userList if x.telegramUserID == value]
+                return [x for x in userList_toSearch if x.telegramUserID == value]
             except:
                 logging.info("User is not in database")
                 return []
         elif attribute  == "Access":
             try:
-                return [x for x in cls.userList if x.access == value]
+                return [x for x in userList_toSearch if x.access == value]
             except:
                 logging.info("No businesses to register")
                 return []
         elif attribute  == "Business Name":
             try:
-                return [x for x in cls.userList if x.businessName == value]
+                return [x for x in userList_toSearch if x.businessName == value]
             except:
                 logging.info("No businesses matches")
                 return []

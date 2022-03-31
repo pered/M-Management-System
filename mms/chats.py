@@ -1,4 +1,6 @@
 from typing import Optional,List
+import random
+import string
 from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler
 from mms import HandlerList
@@ -46,7 +48,14 @@ class Chats:
    #Wholesale commands 
    
     def register(self, update: Update, context: CallbackContext) -> None:
+        '''Function that provides the ability for wholesale to register in a previously
+        created wholesale user slot in cloud server database'''
+        
+        #Check if user is registered as anything
         user:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        
+        #If the user is not registered then provide registration options with
+        #businesses that have been created with "Register" access in cloud server
         
         if user == []:
             available_reg:List = Chats.users.search("Register", "Access")
@@ -58,10 +67,17 @@ class Chats:
             reply_markup = InlineKeyboardMarkup(keyboard)
             update.message.reply_text('Which cafe do you belong to?:', reply_markup=reply_markup)
             
-            
+        #Else we check whether the user is "Pending Approval" or has already been registered
         else:
-            logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is already registered')
-   
+            pending_users:List = Chats.users.search("Pending Approval", "Access", user)
+            if [True for user in pending_users if user.access == 'Pending Approval']:
+                update.message.reply_text('Please wait for you registration to be approved')
+                logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is awaiting approval!')
+            else:
+                update.message.reply_text('You are already registered')
+                logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is already registered.')
+    
+    
     def register_action(self, update: Update, context: CallbackContext) -> None:
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
@@ -82,7 +98,8 @@ class Chats:
             if len(user_toAssign) == 1:
                 user_toAssign[0].firstName = query.from_user.first_name
                 user_toAssign[0].lastName = query.from_user.last_name
-                # generate random mms id user_toAssing[0].mmsUserID =f'A{}'
+                user_toAssign[0].mmsUserID = 'A'+''.join(random.choices(string.digits, k=3))\
+                    +''.join(random.choices(string.ascii_letters + string.digits, k=6))
                 user_toAssign[0].telegramUserID = query.from_user.id
                 user_toAssign[0].access = "Pending Approval"
                 print(user_toAssign[0].__dict__)
