@@ -29,3 +29,6 @@ class User:
             self.access:str = None
         
         
+    def to_json(self):
+        
+        pass

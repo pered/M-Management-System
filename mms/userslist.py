@@ -70,6 +70,8 @@ class UserList:
     
     @classmethod
     def save(cls) -> None:
+        jsonarray_Admin = [user.mmsUserID for user in cls.userList if type(user) == Admin]
+        jsonarray_Wholesale = [user.mmsUserID for user in cls.userList if type(user) == WholesaleUser]
         pass
     
     #Complex class methods
@@ -97,6 +99,3 @@ class UserList:
                 logging.info("No businesses matches")
                 return []
             
-    @classmethod
-    def assign_User(cls, user_toAssign:Union[WholesaleUser, Admin]):
-        pass

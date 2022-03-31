@@ -2,7 +2,7 @@ from typing import Optional,List
 import random
 import string
 from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
-from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler
+from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler, ConversationHandler
 from mms import HandlerList
 from .userslist import UserList
 import logging
@@ -47,7 +47,7 @@ class Chats:
     
    #Wholesale commands 
    
-    def register(self, update: Update, context: CallbackContext) -> None:
+    def register(self, update: Update, context: CallbackContext) -> str:
         '''Function that provides the ability for wholesale to register in a previously
         created wholesale user slot in cloud server database'''
         
@@ -76,26 +76,27 @@ class Chats:
             else:
                 update.message.reply_text('You are already registered')
                 logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is already registered.')
+        
+        return "REGISTER"
     
-    
-    def register_action(self, update: Update, context: CallbackContext) -> None:
+    def register_query(self, update: Update, context: CallbackContext) -> None:
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
     
         # CallbackQueries need to be answered, even if no notification to the user is needed
         # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-        query.answer()    
+        query.answer()
     
         if query.data == "Cancel":
             query.delete_message()
         
         elif type(query.data) == str:
+            
             available_reg:List = Chats.users.search("Register", "Access")
-            user_toAssign:List = [x for x in available_reg if x.businessName == query.data]
-            
-            
+            user_toAssign:List = Chats.users.search(query.data, "Business Name", available_reg)
             
             if len(user_toAssign) == 1:
+                
                 user_toAssign[0].firstName = query.from_user.first_name
                 user_toAssign[0].lastName = query.from_user.last_name
                 user_toAssign[0].mmsUserID = 'A'+''.join(random.choices(string.digits, k=3))\
@@ -103,12 +104,15 @@ class Chats:
                 user_toAssign[0].telegramUserID = query.from_user.id
                 user_toAssign[0].access = "Pending Approval"
                 print(user_toAssign[0].__dict__)
-                Chats.users.assign_User(user_toAssign)
+                
+                Chats.users.save()
+                
                 query.edit_message_text(text=f"You have been registered as: {query.data}")  
                 
             else:
+                
                 logging.info("There are multiple businesses with the same business name to choose")
-                query.edit_message_text(text="There's a problem, ask an admin to help")  
+                query.edit_message_text(text="An error has been recorded!")  
                 
         
    
@@ -149,8 +153,10 @@ class Chats:
         HandlerList(CommandHandler("reload_users", self.reload_Users))
         
         #Wholesale Handlers
-        HandlerList(CommandHandler('register', self.register))
-        HandlerList(CallbackQueryHandler(self.register_action))
+        HandlerList(ConversationHandler(entry_points=[
+                                            CommandHandler('register', self.register)],
+                                        states={"REGISTER":[
+                                            CallbackQueryHandler(self.register_query)]},
+                                        fallbacks=[]))     
         
-        HandlerList(CommandHandler('order', self.order))
-        
+        #CommandHandler('order', self.order)],
