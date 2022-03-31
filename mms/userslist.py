@@ -26,6 +26,8 @@ class UserList:
     def __init__(self) -> None:
         pass
     
+    #Cloud server methods
+    
     @classmethod
     def load(cls) -> None:
         adminResults = UserList.adminSheet.values().get(spreadsheetId=\
@@ -65,6 +67,12 @@ class UserList:
         ##Check this ##
         cls.userList += [Admin(x[1]) for x in admin_df.iterrows()]
         cls.userList += [WholesaleUser(x[1]) for x in wholesale_df.iterrows()] 
+    
+    @classmethod
+    def save(cls) -> None:
+        pass
+    
+    #Complex class methods
     
     @classmethod
     def search(cls, value, attribute:str, userList_toSearch:List = userList) -> List:
