@@ -21,37 +21,44 @@ creds = service_account.Credentials.from_service_account_file('maximal-copilot-3
 
 service = build('sheets','v4', credentials=creds)
 sheet = service.spreadsheets()
-result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME).execute()
+# result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME).execute()
 
 
-get_spreadsheet_by_data_filter_request_body = {
-    # The DataFilters used to select which ranges to retrieve from
-    # the spreadsheet.
-    'data_filters': {"a1Range":"Pere"},  # TODO: Update placeholder value.
 
-    # True if grid data should be returned.
-    # This parameter is ignored if a field mask was set in the request.
-    'include_grid_data': False,  # TODO: Update placeholder value.
+# create_developer_metadata = {"requests" :[{"createDeveloperMetadata": {"developerMetadata": {
+#                                                                 "metadataKey":"Admin1",
+#                                                                 "location" : {"dimensionRange":
+#                                                                               {"sheetId":1929008158,
+#                                                                               "dimension":"ROWS",
+#                                                                               "startIndex": 1,
+#                                                                               "endIndex": 2}
+#                                                                               },
+#                                                                 "visibility": "DOCUMENT"}
+#     }}]}
 
-    # TODO: Add desired entries to the request body.
-}
+# request = service.spreadsheets().batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=create_developer_metadata)
+# response = request.execute()
 
-request = sheet.getByDataFilter(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=get_spreadsheet_by_data_filter_request_body)
+# #This is one way of looking up metadata
+# batch_get_values_by_data_filter_request_body = {
+
+#     'data_filters': [{'developerMetadataLookup': {'metadataId': 1138576308,
+#                                                   'metadataLocation' : {"sheetId":1929008158}
+#                                                   }}]  # TODO: Update placeholder value.
+
+# }
+
+# request = sheet.values().batchGetByDataFilter(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=batch_get_values_by_data_filter_request_body)
+# response = request.execute()
+
+#Another way of getting metadata by ID
+# request = sheet.developerMetadata().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,metadataId=1167760412)
+# response = request.execute()
+
+
+# #This deletes all previously applied metadata on a sheet
+delete_all = {"requests" :{"deleteDeveloperMetadata":{"dataFilter": {"developerMetadataLookup": {"metadataLocation": {"sheetId":1929008158}}}}}}
+request = service.spreadsheets().batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=delete_all)
 response = request.execute()
 
 print(response)
-
-# # How the input data should be interpreted.
-# value_input_option = 'USER_ENTERED'  # TODO: Update placeholder value.
-
-# value_range_body = {
-#     "majorDimension" : 'ROWS',
-#     "range" : "Admin!A3:E3",
-#     "values": [['test ID','Name Test', 'Last Name Test', '0152842', 'Test']]
-# }
-
-# request = sheet.values().update(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=SAMPLE_RANGE_NAME, valueInputOption=value_input_option, body=value_range_body)
-# response = request.execute()
-
-# # TODO: Change code below to process the `response` dict:
-# print(response)
