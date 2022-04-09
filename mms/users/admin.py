@@ -1,7 +1,8 @@
 from .user import User
+from typing import Tuple
 from pandas import Series
 
 class Admin(User):
-    def __init__(self, sheet_df:Series):
-        super().__init__(sheet_df)
+    def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
+        super().__init__(df, sheetID)
     

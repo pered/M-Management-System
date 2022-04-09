@@ -13,63 +13,91 @@ class UserList:
     
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
     SAMPLE_SPREADSHEET_ID = "10bzoC_M0GOyEB8CH5zY9EXE7tGtxnC8vwJO3tTBDkyA"
-    ADMIN_SAMPLE_RANGE_NAME = 'Admin!'
-    WHOLESALE_SAMPLE_RANGE_NAME = 'Wholesale!'
     
+    ADMIN_SAMPLE_RANGE_NAME = 'Admin'
+    WHOLESALE_SAMPLE_RANGE_NAME = 'Wholesale'
+    
+    WHOLESALE_SHEETID = 0
+    ADMIN_SHEETID = 1929008158
+    
+    #Lists used for batch executions of developer metadata
+    request_list:List = []
+    
+    
+    #Variables refering to methods for cloud sheets manipulation
     creds = service_account.Credentials.from_service_account_file(\
             'maximal-copilot-343018-f149332a7912.json',scopes=SCOPES)
-    
-    Sheet = build('sheets','v4', credentials=creds).spreadsheets()   
+    sheet = build('sheets','v4', credentials=creds).spreadsheets()   
         
     def __init__(self) -> None:
-        pass
-    
+        #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
+        delete_all = {"requests" : [
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+            "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.WHOLESALE_SHEETID}}}}},
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+           "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.ADMIN_SHEETID}}}}}
+            ]}
+        UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
+        logging.info("Initialised user list")
     #Cloud server methods
     
     @classmethod
     def load(cls) -> None:
-        results = UserList.Sheet.values().batchGet(\
+        #Obtain the values of cloud sheet
+        results = UserList.sheet.values().batchGet(\
                             spreadsheetId = UserList.SAMPLE_SPREADSHEET_ID,\
-                            ranges=[UserList.ADMIN_SAMPLE_RANGE_NAME, UserList.WHOLESALE_SAMPLE_RANGE_NAME]).execute()
-           
-            
+                            ranges=[UserList.WHOLESALE_SAMPLE_RANGE_NAME, UserList.ADMIN_SAMPLE_RANGE_NAME]).execute()
             
         #Creating DataFrames for creation of user objects
-    
-        # admin_df = DataFrame(adminResults['values'][1:], columns = adminResults['values'][0])
-        # wholesale_df = DataFrame(wholesaleResults['values'][1:], columns = wholesaleResults['values'][0])
+        wholesale_df = DataFrame(results['valueRanges'][0]['values'][1:], columns = results['valueRanges'][0]['values'][0])
+        admin_df = DataFrame(results['valueRanges'][1]['values'][1:], columns = results['valueRanges'][1]['values'][0])
         
-        # ##Check this ##
-        # cls.userList += [Admin(x[1]) for x in admin_df.iterrows()]
-        # cls.userList += [WholesaleUser(x[1]) for x in wholesale_df.iterrows()]
+        
+        
+        #Creation of userList with User objects
+        cls.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
+        cls.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
+       
+    
+        response = UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
+        [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(UserList.userList, response['replies'])]
+        UserList.request_list = []
+        logging.info("User list loading complete")
     
     @classmethod
-    def reload(cls) -> None:
+    def reload_all(cls) -> None:
+        #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
+        delete_all = {"requests" : [
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+            "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.WHOLESALE_SHEETID}}}}},
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+           "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.ADMIN_SHEETID}}}}}
+            ]}
+        UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
+        
+        #Delete all User objects
         cls.userList = []
         
-        adminResults = UserList.adminSheet.values().get(spreadsheetId=\
-                            UserList.SAMPLE_SPREADSHEET_ID, range=\
-                                UserList.ADMIN_SAMPLE_RANGE_NAME).execute()
-            
-        wholesaleResults = UserList.wholesaleSheet.values().get(spreadsheetId=\
-                            UserList.SAMPLE_SPREADSHEET_ID, range=\
-                                UserList.WHOLESALE_SAMPLE_RANGE_NAME).execute() 
+        #Obtain users from cloud sheet
+        results = UserList.sheet.values().batchGet(\
+                            spreadsheetId = UserList.SAMPLE_SPREADSHEET_ID,\
+                            ranges=[UserList.WHOLESALE_SAMPLE_RANGE_NAME, UserList.ADMIN_SAMPLE_RANGE_NAME]).execute()
             
         #Creating DataFrames for creation of user objects
-    
-        admin_df = DataFrame(adminResults['values'][1:], columns = adminResults['values'][0])
-        wholesale_df = DataFrame(wholesaleResults['values'][1:], columns = wholesaleResults['values'][0])
+        wholesale_df = DataFrame(results['valueRanges'][0]['values'][1:], columns = results['valueRanges'][0]['values'][0])
+        admin_df = DataFrame(results['valueRanges'][1]['values'][1:], columns = results['valueRanges'][1]['values'][0])
         
-        ##Check this ##
-        cls.userList += [Admin(x[1]) for x in admin_df.iterrows()]
-        cls.userList += [WholesaleUser(x[1]) for x in wholesale_df.iterrows()] 
-    
-    @classmethod
-    def save(cls) -> None:
-        jsonarray_Admin = [user.mmsUserID for user in cls.userList if type(user) == Admin]
-        jsonarray_Wholesale = [user.mmsUserID for user in cls.userList if type(user) == WholesaleUser]
-        pass
-    
+        
+        
+        #Creation of userList with User objects
+        cls.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
+        cls.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
+        
+        response = UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
+        [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(UserList.userList, response['replies'])]
+        UserList.request_list = []
+        
+        logging.info("User list reload complete")
     #Complex class methods
     
     @classmethod

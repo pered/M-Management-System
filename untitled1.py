@@ -22,10 +22,10 @@ creds = service_account.Credentials.from_service_account_file('maximal-copilot-3
 
 service = build('sheets','v4', credentials=creds)
 sheet = service.spreadsheets()
-result = sheet.values().batchGet(spreadsheetId=SAMPLE_SPREADSHEET_ID, ranges=[ADMIN_SAMPLE_RANGE_NAME,WHOLESALE_SAMPLE_RANGE_NAME])
-response = result.execute()
+# result = sheet.values().batchGet(spreadsheetId=SAMPLE_SPREADSHEET_ID, ranges=[ADMIN_SAMPLE_RANGE_NAME,WHOLESALE_SAMPLE_RANGE_NAME])
+# response = result.execute()
 
-print([i['values'] for i in response['valueRanges']])
+# print(response['valueRanges'][0])
 
 
 # create_developer_metadata = {"requests" :[{"createDeveloperMetadata": {"developerMetadata": {
@@ -52,10 +52,10 @@ print([i['values'] for i in response['valueRanges']])
 # request = service.spreadsheets().batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=create_developer_metadata)
 # response = request.execute()
 
-# #This is one way of looking up metadata
+#This is one way of looking up metadata
 # batch_get_values_by_data_filter_request_body = {
 
-#     'data_filters': [{'developerMetadataLookup': {'metadataId': 1138576308,
+#     'data_filters': [{'developerMetadataLookup': {'metadataId': 265876189,
 #                                                   'metadataLocation' : {"sheetId":1929008158}
 #                                                   }}]  # TODO: Update placeholder value.
 
@@ -65,26 +65,25 @@ print([i['values'] for i in response['valueRanges']])
 # response = request.execute()
 
 #Another way of getting metadata by ID
-# request = sheet.developerMetadata().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,metadataId=1167760412)
-# response = request.execute()
+request = sheet.developerMetadata().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,metadataId=493650965)
+response = request.execute()
 
 
 # #This deletes all previously applied metadata on a sheet
-# delete_all = {"requests" :{"deleteDeveloperMetadata":{"dataFilter": {"developerMetadataLookup": {"metadataLocation": {"sheetId":1929008158}}}}}}
+# delete_all = {"requests" :{"deleteDeveloperMetadata":{"dataFilter": {"developerMetadataLookup": {"metadataLocation": {"sheetId":0}}}}}}
 # request = service.spreadsheets().batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=delete_all)
 # response = request.execute()
 
 #Updating values by the use of metadata ID
-
 # batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
-#                            "data": [{"dataFilter": {'developerMetadataLookup': 
-#                                                    {'metadataId': 265876189
+#                             "data": [{"dataFilter": {'developerMetadataLookup': 
+#                                                     {'metadataId': 265876189
 #                                                     }},
 #                             "majorDimension": 'ROWS',
 #                             "values": [[None,'Ok',None,None,None]
-#                                        ]}]}
+#                                         ]}]}
 
 # request = sheet.values().batchUpdateByDataFilter(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=batch_datafilter_update)
 # response = request.execute()
 
-#print(response)
+print(response)
