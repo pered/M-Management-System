@@ -1,40 +1,30 @@
-from typing import Optional, Tuple, Dict
+from typing import Tuple
 from pandas import Series
 import logging
-from .. import userslist
+from .. import businesslist
 import json
 
-class User:
+class Business:
     def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
         try:
-            self.firstName:str = df[1]['First Name']
+            self.mmsbusinessId = df[1]['MMS Business ID']
         except:
-            self.firstName:str = None
-            
-        try: 
-            self.lastName:str = df[1]['Last Name']
-        except:
-            self.lastName:str = None
+            self.mmsbusinessId = None
             
         try:
-            self.mmsUserID:str = df[1]['MMS UserID']
+            self.telegramChatId = df[1]['Telegram Chat ID']
         except:
-            self.mmsUserID:str = None
-            
-        try:
-            self.telegramUserID:int = int(df[1]['Telegram UserID'])
-        except:
-            self.telegramUserID:int = None
+            self.telegramChatId = None
         
         try:
-            self.access:str = df[1]['Access']  
+            self.businessName = df[1]['Business Name']
         except:
-            self.access:str = None
-        
+            self.businessName = None
+            
         self.metadataId = None
         
         if sheetID != None:
-            userslist.UserList.request_list += [{"createDeveloperMetadata": \
+            businesslist.BusinessList.request_list += [{"createDeveloperMetadata": \
                                                  {"developerMetadata": {
                                                      "metadataKey": "sheetID"+f"{df[0]+1}",
                                                      "location" : {"dimensionRange":
@@ -45,25 +35,21 @@ class User:
                                                                    },
                                                      "visibility": "DOCUMENT"}
                                                          }}]
-        logging.info(f"Created {type(self)} user {self.firstName}")
-    
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=4)
-        
+            logging.info(f"Created type {type(self)} with name {self.businessName}")
+            
     def set_metadataId(self,metadataId:int) -> None:
         self.metadataId = metadataId
-        
+            
     def save(self)-> None:
         batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
                                     "data": [{"dataFilter": {'developerMetadataLookup': 
                                                             {'metadataId': self.metadataId
                                                             }},
                                     "majorDimension": 'ROWS',
-                                    "values": [[self.mmsUserID, self.firstName, self.lastName, self.telegramUserID, self.access]
+                                    "values": [[self.mmsbusinessId, self.telegramChatId, self.businessName]
                                                 ]}]}
             
-        userslist.UserList.sheet.values().batchUpdateByDataFilter(spreadsheetId=userslist.UserList.SAMPLE_SPREADSHEET_ID, body=batch_datafilter_update).execute()
+        businesslist.BusinessList.sheet.values().batchUpdateByDataFilter(spreadsheetId=businesslist.BusinessList.SAMPLE_SPREADSHEET_ID, body=batch_datafilter_update).execute()
         
     def refresh(self) -> None:
         batch_request_get = {
@@ -73,6 +59,9 @@ class User:
 
         }
         
-        response = userslist.UserList.sheet.values().batchGetByDataFilter(spreadsheetId=userslist.UserList.SAMPLE_SPREADSHEET_ID, body = batch_request_get).execute()
-        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+        response = businesslist.BusinessList.sheet.values().batchGetByDataFilter(spreadsheetId=businesslist.BusinessList.SAMPLE_SPREADSHEET_ID, body = batch_request_get).execute()
+        self.mmsbusinessId, self.telegramChatId,self.businessName = response['valueRanges'][0]['valueRange']['values'][0]
         
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)

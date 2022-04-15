@@ -13,6 +13,8 @@ def main() -> None:
     
     #Initialise modules
     mms_Bot = Bot()
+    #Load the settings from the settings sheet in order to allow the dependent 
+    #classes to initialise correctly (e.g. Chats)
     mms_Chats = Chats()
     
     #Load Data from modules

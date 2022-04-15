@@ -5,18 +5,26 @@ from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, Inli
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler, ConversationHandler,MessageHandler, Filters
 from mms import HandlerList
 from .userslist import UserList
+from .businesslist import BusinessList
+from .settingslist import SettingsCFG
 import logging
+import json
 
 class Chats:
-    users:UserList = UserList()
+    users:UserList = UserList
+    businesses:BusinessList = BusinessList
+    
     def __init__(self):
         super().__init__()
+        SettingsCFG()
+        Chats.businesses.load()
         Chats.users.load()
+        
     
     ### Test functions ###
     
     def print_RegisteredUsers(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text([x.__dict__ for x in Chats.users.userList])
+        update.message.reply_text([x.toJSON() for x in Chats.users.userList])
     
     def print_chatId(self,update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
@@ -47,52 +55,59 @@ class Chats:
     
    #Wholesale commands 
    
-    def cancel(self, update: Update, context: CallbackContext) -> int:
-        """Cancels and ends the conversation."""
-        user = update.message.from_user
-        logging.info("User %s canceled the conversation.", user.first_name)
-        update.message.reply_text('Bye! I hope we can talk again some day.')
-        
-        return ConversationHandler.END
-   
     def register(self, update: Update, context: CallbackContext) -> str:
         '''Function that provides the ability for wholesale to register in a previously
         created wholesale user slot in cloud server database'''
         
         #Check if user is registered as anything
         userlist:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        print(userlist)
+        
         #If the user is not registered then provide registration options with
         #businesses that have been created with "Register" access in cloud server
         
-        if userlist == []:
-            available_reg:List = Chats.users.search("Register", "Access")
-
-            keyboard = [[InlineKeyboardButton(x.businessName, callback_data= x.businessName) \
-                        for x in available_reg],
-                        [InlineKeyboardButton("Cancel", callback_data='Cancel')],]
-                
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            update.message.reply_text('Which cafe do you belong to?:', reply_markup=reply_markup)
-         
-            return "REGISTER"
-        #Else we check whether the user is "Pending Approval" or has already been registered
-        else:
-            #Refresh in case there has been status change
+        if len(userlist) < SettingsCFG.max_reg_per_user:
+            #If the amount of links between the telegram user id is less than the maximum allowed
+            #we proceed to refresh those users to check if their status has changed
+            
             [users.refresh() for users in userlist]
             pending_users:List = Chats.users.search("Pending Approval", "Access", userlist)
-            
+
             if [True for user in pending_users if user.access == 'Pending Approval']:
-                update.message.reply_text('Please wait for you registration to be approved')
+                
+                #and if any of the users returned are pending approval we tell them to wait
+                
+                update.message.reply_text('We are getting your registration approved')
                 logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is awaiting approval!')
                 return ConversationHandler.END
-            else:
-                try:
-                    [update.message.reply_text(f'You are already registered as {user.businessName}') for user in userlist]
-                except:
-                    [update.message.reply_text('You are already registered as {user.firstName} with access level of {user.access}') for user in userlist]
-                logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is already registered.')
-                return ConversationHandler.END
             
+            else:
+                
+                #and if the users are not waiting to be approved and under the 
+                #limit we allow them to register for some open spots
+                
+                available_reg:List = Chats.users.search("Register", "Access")
+    
+                keyboard = [[InlineKeyboardButton(x.business.businessName, callback_data= x.business.businessName) \
+                            for x in available_reg],
+                            [InlineKeyboardButton("Cancel", callback_data='Cancel')],]
+                    
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                update.message.reply_text('Which cafe do you belong to?:', reply_markup=reply_markup)
+             
+                return "REGISTER"
+        
+        #Otherwise we tell them they are over the limit and tell them to stop
+        
+        elif len(userlist) >= SettingsCFG.max_reg_per_user:
+            update.message.reply_text('You have reached the maximum allowed registrations!')
+            logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} has reached maximum registrations!')
+            return ConversationHandler.END
+        
+        #As of writing this I am tired and not able to think of cases that would fill this
+        else:
+            logging.info('Check register definition for unusual registration case')
+            return ConversationHandler.END
         
     
     def register_query(self, update: Update, context: CallbackContext) -> int:
@@ -118,8 +133,13 @@ class Chats:
                 user_toAssign[0].mmsUserID = 'A'+''.join(random.choices(string.ascii_letters + string.digits, k=5))
                 user_toAssign[0].telegramUserID = query.from_user.id
                 user_toAssign[0].access = "Pending Approval"
-                print(user_toAssign[0].__dict__)
                 user_toAssign[0].save()
+                try:
+                    print(query.message.chat_id)
+                    user_toAssign[0].business.telegramChatId = query.message.chat_id
+                    user_toAssign[0].business.save()
+                except:
+                    pass
                 
                 query.edit_message_text(text=f"You have been registered as: {query.data}")  
                 
@@ -172,6 +192,6 @@ class Chats:
                                             CommandHandler('register', self.register)],
                                         states={"REGISTER":[
                                             CallbackQueryHandler(self.register_query)]},
-                                        fallbacks=[CommandHandler('cancel', self.cancel)]))     
+                                        fallbacks=[]))     
         
         #CommandHandler('order', self.order)],

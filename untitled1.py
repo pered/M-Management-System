@@ -6,14 +6,13 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
 # SAMPLE_SPREADSHEET_ID = '1mCJyUwHad0RBj14d8pvYC1EaCd4mHNwzkDKiUYTcLy4'
 # SAMPLE_RANGE_NAME = 'Coffee!A2:E'
-
-SAMPLE_SPREADSHEET_ID = "10bzoC_M0GOyEB8CH5zY9EXE7tGtxnC8vwJO3tTBDkyA"
-ADMIN_SAMPLE_RANGE_NAME = 'Admin'
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+SAMPLE_SPREADSHEET_ID = "104m9PVDzrz4yK-AD0u5ai8_aMTmcUKYuz9prZHq0CV4"
+SAMPLE_RANGE_NAME = 'Page1'
 WHOLESALE_SAMPLE_RANGE_NAME = 'Wholesale'
 
 creds = None
@@ -22,8 +21,8 @@ creds = service_account.Credentials.from_service_account_file('maximal-copilot-3
 
 service = build('sheets','v4', credentials=creds)
 sheet = service.spreadsheets()
-# result = sheet.values().batchGet(spreadsheetId=SAMPLE_SPREADSHEET_ID, ranges=[ADMIN_SAMPLE_RANGE_NAME,WHOLESALE_SAMPLE_RANGE_NAME])
-# response = result.execute()
+result = sheet.values().batchGet(spreadsheetId=SAMPLE_SPREADSHEET_ID, ranges=[SAMPLE_RANGE_NAME])
+response = result.execute()
 
 # print(response['valueRanges'][0])
 
@@ -65,8 +64,8 @@ sheet = service.spreadsheets()
 # response = request.execute()
 
 #Another way of getting metadata by ID
-request = sheet.developerMetadata().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,metadataId=493650965)
-response = request.execute()
+# request = sheet.developerMetadata().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,metadataId=493650965)
+# response = request.execute()
 
 
 # #This deletes all previously applied metadata on a sheet

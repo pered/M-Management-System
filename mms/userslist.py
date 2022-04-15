@@ -31,12 +31,14 @@ class UserList:
         
     def __init__(self) -> None:
         #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
+        
         delete_all = {"requests" : [
             {"deleteDeveloperMetadata":{"dataFilter": {\
             "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.WHOLESALE_SHEETID}}}}},
             {"deleteDeveloperMetadata":{"dataFilter": {\
            "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.ADMIN_SHEETID}}}}}
             ]}
+       
         UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
         logging.info("Initialised user list")
     #Cloud server methods
@@ -118,7 +120,7 @@ class UserList:
                 return []
         elif attribute  == "Business Name":
             try:
-                return [x for x in userList_toSearch if x.businessName == value]
+                return [x for x in userList_toSearch if x.business.businessName == value]
             except:
                 logging.info("No businesses matches")
                 return []
