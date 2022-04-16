@@ -22,9 +22,9 @@ class User:
             self.mmsUserID:str = None
             
         try:
-            self.telegramUserID:int = int(df[1]['Telegram UserID'])
+            self.telegramUserID:str = df[1]['Telegram UserID']
         except:
-            self.telegramUserID:int = None
+            self.telegramUserID:str = None
         
         try:
             self.access:str = df[1]['Access']  

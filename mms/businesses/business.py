@@ -12,9 +12,9 @@ class Business:
             self.mmsbusinessId = None
             
         try:
-            self.telegramChatId = df[1]['Telegram Chat ID']
+            self.telegramChatId:str = df[1]['Telegram Chat ID']
         except:
-            self.telegramChatId = None
+            self.telegramChatId:str = None
         
         try:
             self.businessName = df[1]['Business Name']
@@ -62,6 +62,3 @@ class Business:
         response = businesslist.BusinessList.sheet.values().batchGetByDataFilter(spreadsheetId=businesslist.BusinessList.SAMPLE_SPREADSHEET_ID, body = batch_request_get).execute()
         self.mmsbusinessId, self.telegramChatId,self.businessName = response['valueRanges'][0]['valueRange']['values'][0]
         
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=4)

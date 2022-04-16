@@ -44,6 +44,31 @@ class UserList:
     #Cloud server methods
     
     @classmethod
+    def search(cls, value, attribute:str, userList_toSearch:List = userList) -> List:
+        '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
+            Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
+        
+        if attribute  == "Telegram UserID":
+            print(value)
+            try:
+                return [x for x in userList_toSearch if x.telegramUserID == str(value)]
+            except:
+                logging.info("User is not in database")
+                return []
+        elif attribute  == "Access":
+            try:
+                return [x for x in userList_toSearch if x.access == value]
+            except:
+                logging.info(f"No users with specified access level {value}")
+                return []
+        elif attribute  == "Business Name":
+            try:
+                return [x for x in userList_toSearch if x.business.businessName == value]
+            except:
+                logging.info("No businesses matches")
+                return []
+    
+    @classmethod
     def load(cls) -> None:
         #Obtain the values of cloud sheet
         results = UserList.sheet.values().batchGet(\
@@ -80,7 +105,6 @@ class UserList:
         #Delete all User objects
         cls.userList = []
         
-        #Obtain users from cloud sheet
         results = UserList.sheet.values().batchGet(\
                             spreadsheetId = UserList.SAMPLE_SPREADSHEET_ID,\
                             ranges=[UserList.WHOLESALE_SAMPLE_RANGE_NAME, UserList.ADMIN_SAMPLE_RANGE_NAME]).execute()
@@ -102,26 +126,5 @@ class UserList:
         logging.info("User list reload complete")
     #Complex class methods
     
-    @classmethod
-    def search(cls, value, attribute:str, userList_toSearch:List = userList) -> List:
-        '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
-            Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
-        if attribute  == "Telegram UserID":
-            try:
-                return [x for x in userList_toSearch if x.telegramUserID == value]
-            except:
-                logging.info("User is not in database")
-                return []
-        elif attribute  == "Access":
-            try:
-                return [x for x in userList_toSearch if x.access == value]
-            except:
-                logging.info("No businesses to register")
-                return []
-        elif attribute  == "Business Name":
-            try:
-                return [x for x in userList_toSearch if x.business.businessName == value]
-            except:
-                logging.info("No businesses matches")
-                return []
+    
             

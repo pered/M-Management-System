@@ -11,14 +11,15 @@ import logging
 import json
 
 class Chats:
-    users:UserList = UserList
-    businesses:BusinessList = BusinessList
+    users:UserList = UserList()
+    businesses:BusinessList = BusinessList()
+
     
     def __init__(self):
         super().__init__()
-        SettingsCFG()
         Chats.businesses.load()
         Chats.users.load()
+        
         
     
     ### Test functions ###
@@ -60,18 +61,17 @@ class Chats:
         created wholesale user slot in cloud server database'''
         
         #Check if user is registered as anything
-        userlist:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
-        print(userlist)
-        
+        usermatch_telegramId:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        print(usermatch_telegramId)
         #If the user is not registered then provide registration options with
         #businesses that have been created with "Register" access in cloud server
         
-        if len(userlist) < SettingsCFG.max_reg_per_user:
+        if len(usermatch_telegramId) < SettingsCFG.max_reg_per_user:
             #If the amount of links between the telegram user id is less than the maximum allowed
             #we proceed to refresh those users to check if their status has changed
             
-            [users.refresh() for users in userlist]
-            pending_users:List = Chats.users.search("Pending Approval", "Access", userlist)
+            [users.refresh() for users in usermatch_telegramId]
+            pending_users:List = Chats.users.search("Pending Approval", "Access", usermatch_telegramId)
 
             if [True for user in pending_users if user.access == 'Pending Approval']:
                 
@@ -99,7 +99,7 @@ class Chats:
         
         #Otherwise we tell them they are over the limit and tell them to stop
         
-        elif len(userlist) >= SettingsCFG.max_reg_per_user:
+        elif len(usermatch_telegramId) >= SettingsCFG.max_reg_per_user:
             update.message.reply_text('You have reached the maximum allowed registrations!')
             logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} has reached maximum registrations!')
             return ConversationHandler.END
@@ -135,7 +135,6 @@ class Chats:
                 user_toAssign[0].access = "Pending Approval"
                 user_toAssign[0].save()
                 try:
-                    print(query.message.chat_id)
                     user_toAssign[0].business.telegramChatId = query.message.chat_id
                     user_toAssign[0].business.save()
                 except:
