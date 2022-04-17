@@ -24,9 +24,14 @@ class BusinessList:
     request_list:List = []
         
     def __init__(self) -> None:
-        logging.info("Initializing settings from settings sheet")
-        
-        logging.info("Initialised settings from settings sheet")
+        logging.info("Initializing businesses from business sheet")
+        delete_all = {"requests" : [
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+            "developerMetadataLookup": {"metadataLocation": {"sheetId":BusinessList.PAGE1_SHEETID}}}}}
+            ]}
+       
+        BusinessList.sheet.batchUpdate(spreadsheetId=BusinessList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
+        logging.info("Initialised businesses from business sheet")
         
     @classmethod
     def load(cls):
@@ -64,9 +69,11 @@ class BusinessList:
         logging.info("Business list loading complete")
         
     @classmethod
-    def search(cls, value, attribute:str, business_toSearch:List = businessList) -> List:
+    def search(cls, value, attribute:str, business_toSearch:List = None) -> List:
             '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
                 Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
+            if business_toSearch == None:
+                business_toSearch = BusinessList.businessList
 
             if attribute  == "MMS Business ID":
                 try:

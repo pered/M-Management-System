@@ -1,27 +1,26 @@
 from typing import Optional,List
+import logging
+import json
 import random
 import string
+
 from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler, ConversationHandler,MessageHandler, Filters
-from mms import HandlerList
+
 from .userslist import UserList
 from .businesslist import BusinessList
 from .settingslist import SettingsCFG
-import logging
-import json
+from mms import HandlerList
+
 
 class Chats:
-    users:UserList = UserList()
-    businesses:BusinessList = BusinessList()
-
+    businesses:BusinessList = BusinessList
+    users:UserList = UserList
+    
     
     def __init__(self):
-        super().__init__()
-        Chats.businesses.load()
-        Chats.users.load()
+        pass
         
-        
-    
     ### Test functions ###
     
     def print_RegisteredUsers(self, update: Update, context: CallbackContext) -> None:
@@ -43,25 +42,26 @@ class Chats:
         
     #Admin Commands    
     
-    def reload_Users(self, update: Update, context: CallbackContext) -> None:
+    def reload_Users(cls, update: Update, context: CallbackContext) -> None:
         '''This function reloads all the users after there have been updates to\
             the data files on the cloud storage'''
         #Check if user is a super admin to perform command
-        user:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        user:List = cls.users.search(update.message.from_user.id, "Telegram UserID")
         if [True for x in user if x.access == "SuperAdmin"]:
-            Chats.users.reload_all()
+            cls.users.reload_all()
             update.message.reply_text("Reloaded all users!")
         else:
             update.message.reply_text("You are not worthy...")
     
    #Wholesale commands 
    
-    def register(self, update: Update, context: CallbackContext) -> str:
+    @classmethod
+    def register(cls, update: Update, context: CallbackContext) -> str:
         '''Function that provides the ability for wholesale to register in a previously
         created wholesale user slot in cloud server database'''
         
         #Check if user is registered as anything
-        usermatch_telegramId:List = Chats.users.search(update.message.from_user.id, "Telegram UserID")
+        usermatch_telegramId:List = cls.users.search(update.message.from_user.id, "Telegram UserID")
         print(usermatch_telegramId)
         #If the user is not registered then provide registration options with
         #businesses that have been created with "Register" access in cloud server
@@ -71,8 +71,8 @@ class Chats:
             #we proceed to refresh those users to check if their status has changed
             
             [users.refresh() for users in usermatch_telegramId]
-            pending_users:List = Chats.users.search("Pending Approval", "Access", usermatch_telegramId)
-
+            pending_users:List = cls.users.search("Pending Approval", "Access", usermatch_telegramId)
+    
             if [True for user in pending_users if user.access == 'Pending Approval']:
                 
                 #and if any of the users returned are pending approval we tell them to wait
@@ -109,7 +109,7 @@ class Chats:
             logging.info('Check register definition for unusual registration case')
             return ConversationHandler.END
         
-    
+
     def register_query(self, update: Update, context: CallbackContext) -> int:
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
@@ -131,11 +131,11 @@ class Chats:
                 user_toAssign[0].firstName = query.from_user.first_name
                 user_toAssign[0].lastName = query.from_user.last_name
                 user_toAssign[0].mmsUserID = 'A'+''.join(random.choices(string.ascii_letters + string.digits, k=5))
-                user_toAssign[0].telegramUserID = query.from_user.id
+                user_toAssign[0].telegramUserID = str(query.from_user.id)
                 user_toAssign[0].access = "Pending Approval"
                 user_toAssign[0].save()
                 try:
-                    user_toAssign[0].business.telegramChatId = query.message.chat_id
+                    user_toAssign[0].business.telegramChatId = str(query.message.chat_id)
                     user_toAssign[0].business.save()
                 except:
                     pass
@@ -172,10 +172,12 @@ class Chats:
 
 
 
-        
-
-
     def load(self):
+        #Load data
+        Chats.businesses.load()
+        Chats.users.load()
+        
+        #Load Handlers
         HandlerList(CommandHandler("chat_id", self.print_chatId))
         HandlerList(CommandHandler("user_id", self.print_userId))
         HandlerList(CommandHandler('userlist', self.print_RegisteredUsers))

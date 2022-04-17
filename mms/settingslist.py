@@ -19,6 +19,10 @@ class SettingsCFG:
     max_reg_per_user:int = 0
         
     def __init__(self) -> None:
+        pass
+
+    @classmethod
+    def load(cls):
         logging.info("Initializing settings from settings sheet")
         results = SettingsCFG.sheet.values().get(spreadsheetId = SettingsCFG.SAMPLE_SPREADSHEET_ID, range = 'Settings').execute()
         SettingsCFG.max_reg_per_user = int(results['values'][0][1])

@@ -31,7 +31,7 @@ class UserList:
         
     def __init__(self) -> None:
         #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
-        
+        logging.info("Initializing users from user sheet")
         delete_all = {"requests" : [
             {"deleteDeveloperMetadata":{"dataFilter": {\
             "developerMetadataLookup": {"metadataLocation": {"sheetId":UserList.WHOLESALE_SHEETID}}}}},
@@ -40,16 +40,19 @@ class UserList:
             ]}
        
         UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
-        logging.info("Initialised user list")
+        logging.info("Initialised users from user sheet")
     #Cloud server methods
     
     @classmethod
-    def search(cls, value, attribute:str, userList_toSearch:List = userList) -> List:
+    def search(cls, value, attribute:str, userList_toSearch:List = None) -> List:
         '''This function searches if value is in any users of the userlist, given is a value and an attribute to search.\
             Values can be any type, whether int or str, whilst attribute must be of any attribute type found in users'''
+        if userList_toSearch == None:
+            userList_toSearch = UserList.userList
         
         if attribute  == "Telegram UserID":
-            print(value)
+            print([test.telegramUserID for test in UserList.userList])
+            print([test.telegramUserID for test in userList_toSearch])
             try:
                 return [x for x in userList_toSearch if x.telegramUserID == str(value)]
             except:
@@ -82,8 +85,8 @@ class UserList:
         
         
         #Creation of userList with User objects
-        cls.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
-        cls.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
+        UserList.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
+        UserList.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
        
     
         response = UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
@@ -103,7 +106,7 @@ class UserList:
         UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body=delete_all).execute()
         
         #Delete all User objects
-        cls.userList = []
+        UserList.userList = []
         
         results = UserList.sheet.values().batchGet(\
                             spreadsheetId = UserList.SAMPLE_SPREADSHEET_ID,\
@@ -116,8 +119,8 @@ class UserList:
         
         
         #Creation of userList with User objects
-        cls.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
-        cls.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
+        UserList.userList += [WholesaleUser(x, UserList.WHOLESALE_SHEETID) for x in wholesale_df.iterrows()]
+        UserList.userList += [Admin(x, UserList.ADMIN_SHEETID) for x in admin_df.iterrows()]
         
         response = UserList.sheet.batchUpdate(spreadsheetId=UserList.SAMPLE_SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
         [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(UserList.userList, response['replies'])]
