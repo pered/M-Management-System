@@ -10,7 +10,8 @@ from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, Call
 from .userslist import UserList
 from .businesslist import BusinessList
 from .settingslist import SettingsCFG
-from mms import HandlerList
+from .bot import HandlerList
+
 
 
 class Chats:

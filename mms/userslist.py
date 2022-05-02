@@ -6,7 +6,7 @@ import logging
 
 from typing import List, Optional, Tuple, Union
 from pandas import DataFrame
-from .users import Admin, WholesaleUser, User
+from mms.users import Admin, WholesaleUser, User
 
 class UserList: 
     userList: List[User] = []
@@ -51,8 +51,6 @@ class UserList:
             userList_toSearch = UserList.userList
         
         if attribute  == "Telegram UserID":
-            print([test.telegramUserID for test in UserList.userList])
-            print([test.telegramUserID for test in userList_toSearch])
             try:
                 return [x for x in userList_toSearch if x.telegramUserID == str(value)]
             except:

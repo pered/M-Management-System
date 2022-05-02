@@ -1,5 +1,6 @@
 import logging
-from mms import Bot, Chats
+from mms.bot import Bot
+from mms.chats import Chats
 from telegram.ext import CallbackContext
 from telegram import Update
 import json
