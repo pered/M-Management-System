@@ -11,13 +11,13 @@ from pandas import Series, DataFrame
 class Sheets:
     sheet_info:List[Dict] = [{}]
     
-    def __init__(self, write:bool = False):
-        if write == True:
+    def __init__(self, write_sheet:bool = False):
+        if write_sheet == True:
             self.SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
             self.creds = service_account.Credentials.from_service_account_file(\
                     'maximal-copilot-343018-f149332a7912.json',scopes=self.SCOPES)
                 
-            self.sheet = build('sheets','v4', credentials=self.creds).spreadsheets()   
+            self.sheet = build('sheets','v4', credentials=self.creds).spreadsheets()    
             
             delete_all = {"requests" : [{"deleteDeveloperMetadata":{"dataFilter": {\
             "developerMetadataLookup": {"metadataLocation": {"sheetId":product["sheetID"]}}}}} for product in self.sheet_info
@@ -33,7 +33,7 @@ class Sheets:
     
     def load(self):
         return self.sheet.values().batchGet(spreadsheetId = self.SPREADSHEET_ID,\
-                            ranges=[product["Range"] for product in self.sheet_info]).execute()
+                            ranges=[x["Range"] for x in self.sheet_info]).execute()
     
     def save(self):
         pass
