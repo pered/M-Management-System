@@ -3,7 +3,7 @@ import logging
 from pandas import DataFrame
 
 #from .businesses import Business
-#from .users import User
+from .users import User
 from .products import Product
 from .ext import Sheets
 

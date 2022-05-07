@@ -11,8 +11,12 @@ from pandas import Series, DataFrame
 class Sheets:
     sheet_info:List[Dict] = [{}]
     
+    write_protect = True
+    
     def __init__(self, write_sheet:bool = False):
+        
         if write_sheet == True:
+            self.write_protect = False
             self.SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
             self.creds = service_account.Credentials.from_service_account_file(\
                     'maximal-copilot-343018-f149332a7912.json',scopes=self.SCOPES)
@@ -32,6 +36,9 @@ class Sheets:
             self.sheet = build('sheets','v4', credentials=self.creds).spreadsheets()   
     
     def load(self):
+        if self.write_protect == False:
+            pass
+        
         return self.sheet.values().batchGet(spreadsheetId = self.SPREADSHEET_ID,\
                             ranges=[x["Range"] for x in self.sheet_info]).execute()
     
