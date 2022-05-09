@@ -1,5 +1,4 @@
 from typing import Optional, Tuple, Dict, List
-from pandas import Series, DataFrame
 from .ext import Sheets
 import logging
 import json
@@ -24,13 +23,14 @@ class UserList(Sheets, list['User']):
         
         self.results = Sheets.load(self)
         
-        df = DataFrame(self.results['valueRanges'][0]['values'][1:], columns = self.results['valueRanges'][0]['values'][0])
-
+        [User()]
+        #usergroup_df = [DataFrame(data['values'][1:], columns = data['values'][0]) for data in self.results['valueRanges']]
+        #self.test = [(user_Seriesdata) for user_Seriesdata in filter(lambda x: x.iterrows(), usergroup_df)]
 
 class User:
     all_users = UserList()
     
-    def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
+    def __init__(self, df:Tuple[int, list, str] = (None, [], "")):
         try:
             self.firstName:str = df[1]['First Name']
         except:
@@ -58,12 +58,12 @@ class User:
         
         self.metadataId:str = int()
         
-        if sheetID != None:
+        if df[2] != "":
             User.all_users.request_list += [{"createDeveloperMetadata": \
                                                  {"developerMetadata": {
                                                      "metadataKey": "sheetID"+f"{df[0]+1}",
                                                      "location" : {"dimensionRange":
-                                                                   {"sheetId":sheetID,
+                                                                   {"sheetId":df[2],
                                                                     "dimension":"ROWS",
                                                                     "startIndex": df[0]+1,
                                                                     "endIndex": df[0]+2}
@@ -110,16 +110,16 @@ class User:
         
 
 
-class Admin(User):
-    def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
-        super().__init__(df, sheetID)
+# class Admin(User):
+#     def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
+#         super().__init__(df, sheetID)
 
-class WholesaleUser(User):
-    def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
-        super().__init__(df, sheetID)
-        try:
-            pass
-            #self.business:Business = BusinessList.search(df[1]['Assigned Business'],"MMS Business ID")[0]
-        except:
-            pass
-            #self.business:Business = None
+# class WholesaleUser(User):
+#     def __init__(self, df:Tuple[int, Series] = (None, Series(dtype=(float))), sheetID:int = None):
+#         super().__init__(df, sheetID)
+#         try:
+#             pass
+#             #self.business:Business = BusinessList.search(df[1]['Assigned Business'],"MMS Business ID")[0]
+#         except:
+#             pass
+#             #self.business:Business = None

@@ -35,10 +35,7 @@ class Sheets:
                 
             self.sheet = build('sheets','v4', credentials=self.creds).spreadsheets()   
     
-    def load(self):
-        if self.write_protect == False:
-            pass
-        
+    def load(self):        
         return self.sheet.values().batchGet(spreadsheetId = self.SPREADSHEET_ID,\
                             ranges=[x["Range"] for x in self.sheet_info]).execute()
     
