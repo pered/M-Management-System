@@ -4,46 +4,46 @@ import logging
 import json
 from pandas import DataFrame, Series
 
-class UserList(Sheets, list['User']): 
+class BusinessList(Sheets, list['Business']): 
 
-    SPREADSHEET_ID = "10bzoC_M0GOyEB8CH5zY9EXE7tGtxnC8vwJO3tTBDkyA"
+    SPREADSHEET_ID = "104m9PVDzrz4yK-AD0u5ai8_aMTmcUKYuz9prZHq0CV4"
     sheet_info = [{"Range": "Wholesale",
                     "sheetID": 0},
-                  {"Range": "Admin",
-                    "sheetID": 1929008158}]
+                  {"Range": "Internal",
+                    "sheetID": 1788602125}]
     
     request_list:List = []
     
     def __init__(self):
         super().__init__(write_sheet=True)
         #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
-        logging.info("Initializing users from user sheet")
+        logging.info("Initializing businesses from business sheet")
         delete_all = {"requests" : [
             {"deleteDeveloperMetadata":{"dataFilter": {\
             "developerMetadataLookup": {"metadataLocation": {"sheetId":sheets["sheetID"]}}}}} for sheets in self.sheet_info 
             ]}
-        self.sheet.batchUpdate(spreadsheetId=UserList.SPREADSHEET_ID, body=delete_all).execute()
+        self.sheet.batchUpdate(spreadsheetId=self.SPREADSHEET_ID, body=delete_all).execute()
         logging.info("Initialised users from user sheet")
         
     def load(self):
-        if UserList.__len__ != 0:
-            UserList.clear(self)
+        if BusinessList.__len__ != 0:
+            BusinessList.clear(self)
             logging.info("Reloaded product list")
         
         self.results = Sheets.load(self)
         
         #Create a list of objects with products in them
-        [[User(UserList.sheet_info[index]['Range'], UserList.sheet_info[index]['sheetID'], sf_user)
-          for sf_user in df_user.iterrows()] 
-             for index, df_user in [(self.results['valueRanges'].index(userRange),DataFrame(userRange['values'][1:], columns = userRange['values'][0])) 
-                                       for userRange in self.results['valueRanges']]]
+        [[Business(BusinessList.sheet_info[index]['Range'], BusinessList.sheet_info[index]['sheetID'], sf_business)
+          for sf_business in df_business.iterrows()] 
+             for index, df_business in [(self.results['valueRanges'].index(businessRange),DataFrame(businessRange['values'][1:], columns = businessRange['values'][0])) 
+                                       for businessRange in self.results['valueRanges']]]
         
-        response = self.sheet.batchUpdate(spreadsheetId=UserList.SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
-        [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(User.all_users, response['replies'])]
-        UserList.request_list = []
+        response = self.sheet.batchUpdate(spreadsheetId=BusinessList.SPREADSHEET_ID, body={"requests" :BusinessList.request_list}).execute()
+        [business.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for business,reply in zip(Business.all_businesses, response['replies'])]
+        BusinessList.request_list = []
 
-class User:
-    all_users = UserList()
+class Business:
+    all_businesses = BusinessList()
     
     def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
         if userType == "Admin":
