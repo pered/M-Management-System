@@ -3,12 +3,15 @@ from .ext import Sheets
 import logging
 import json
 from pandas import DataFrame, Series
+from mms.business import Business
 
 class UserList(Sheets, list['User']): 
 
     SPREADSHEET_ID = "10bzoC_M0GOyEB8CH5zY9EXE7tGtxnC8vwJO3tTBDkyA"
     sheet_info = [{"Range": "Wholesale",
                     "sheetID": 0},
+                  {"Range": "Internal",
+                   "sheetID": 1901208172},
                   {"Range": "Admin",
                     "sheetID": 1929008158}]
     
@@ -32,15 +35,18 @@ class UserList(Sheets, list['User']):
         
         self.results = Sheets.load(self)
         
-        #Create a list of objects with products in them
+        #Create a list of objects with users in them
         [[User(UserList.sheet_info[index]['Range'], UserList.sheet_info[index]['sheetID'], sf_user)
           for sf_user in df_user.iterrows()] 
              for index, df_user in [(self.results['valueRanges'].index(userRange),DataFrame(userRange['values'][1:], columns = userRange['values'][0])) 
                                        for userRange in self.results['valueRanges']]]
         
+        ### Assign metadataID to users
         response = self.sheet.batchUpdate(spreadsheetId=UserList.SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
         [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(User.all_users, response['replies'])]
         UserList.request_list = []
+        
+        
 
 class User:
     all_users = UserList()
@@ -50,6 +56,8 @@ class User:
             AdminUser(userType, sheetID, df)
         elif userType == "Wholesale":
             WholesaleUser(userType, sheetID, df)
+        elif userType == "Internal":
+            InternalUser(userType, sheetID, df)
         else:
             logging.info("Invalid type of user, check User Class")
 
@@ -88,8 +96,8 @@ class User:
 
         }
         
-        response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SAMPLE_SPREADSHEET_ID, body = batch_request_get).execute()
-        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+        self.response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
+        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = self.response['valueRanges'][0]['valueRange']['values'][0][0:5]
         
 
 
@@ -144,8 +152,9 @@ class AdminUser(User):
         
         logging.info(f"Created {type(self)} user {self.firstName}")
 
-class WholesaleUser(User):
-    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+
+class NonAdminUser(User):
+    def __init(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
         try:
             self.firstName:str = df[1]['First Name']
         except:
@@ -177,11 +186,9 @@ class WholesaleUser(User):
             self.sheetID = None
         
         try:
-            pass
-            #self.business:Business = BusinessList.search(df[1]['Assigned Business'],"MMS Business ID")[0]
+            self.business:Business = Business.all_businesses.search(mmsbusinessId=df[1]['Assigned Business'])[0]
         except:
-            pass
-            #self.business:Business = None
+            self.business:Business = None
             
         self.metadataId = None
             
@@ -201,3 +208,11 @@ class WholesaleUser(User):
         User.all_users.append(self)
         
         logging.info(f"Created {type(self)} user {self.firstName}")
+
+class InternalUser(User):
+    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+        super().__init__(self, userType, sheetID, df)
+
+class WholesaleUser(User):
+    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+        super().__init__(self, userType, sheetID, df)

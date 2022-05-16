@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['run.py', 'mms\\chats.py', 'mms\\userslist.py', 'mms\\users\\wholesale.py', 'mms\\users\\user.py', 'mms\\businesses\\business.py']
+recent_files = ['run.py', 'tests/usersclass.py', 'mms/users.py', 'mms/userslist.py', 'mms/business.py']
 
 [main]
 version = 0.2.0

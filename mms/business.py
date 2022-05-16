@@ -23,12 +23,12 @@ class BusinessList(Sheets, list['Business']):
             "developerMetadataLookup": {"metadataLocation": {"sheetId":sheets["sheetID"]}}}}} for sheets in self.sheet_info 
             ]}
         self.sheet.batchUpdate(spreadsheetId=self.SPREADSHEET_ID, body=delete_all).execute()
-        logging.info("Initialised users from user sheet")
+        logging.info("Initialised businesses from business sheet")
         
     def load(self):
         if BusinessList.__len__ != 0:
             BusinessList.clear(self)
-            logging.info("Reloaded product list")
+            logging.info("Reloaded business list")
         
         self.results = Sheets.load(self)
         
@@ -41,17 +41,38 @@ class BusinessList(Sheets, list['Business']):
         response = self.sheet.batchUpdate(spreadsheetId=BusinessList.SPREADSHEET_ID, body={"requests" :BusinessList.request_list}).execute()
         [business.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for business,reply in zip(Business.all_businesses, response['replies'])]
         BusinessList.request_list = []
+        
+    def refresh(self) -> None:
+        #Add batch search, current code is not good
+        # [business.refresh() for business in self]
+        # logging.info("Refreshed data for all businesses")
+        pass
+        
+    
+    def search(self, businessType = None, mmsbusinessId = None, businessName:str = None, business_toSearch:List = None) -> List:
+        '''This function returns objects that match the value with the given attribute'''
+        if business_toSearch == None:
+            business_toSearch = Business.all_businesses
+        
+        try:
+            search_results = list(filter(lambda z: (businessType == None or type(z).__name__ == businessType), business_toSearch))
+            search_results = list(filter(lambda z: (mmsbusinessId == None or z.mmsbusinessId == mmsbusinessId), search_results))
+            search_results = list(filter(lambda z: (businessName == None or z.businessName == businessName), search_results))
+            return search_results
+        except:
+            raise ValueError("Tried to seach for an invalid weight in products")
+            return []
 
 class Business:
     all_businesses = BusinessList()
     
-    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
-        if userType == "Admin":
-            AdminUser(userType, sheetID, df)
-        elif userType == "Wholesale":
-            WholesaleUser(userType, sheetID, df)
+    def __init__(self, businessType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+        if businessType == "Wholesale":
+            WholesaleBusiness(businessType, sheetID, df)
+        elif businessType == "Internal":
+            InternalBusiness(businessType, sheetID, df)
         else:
-            logging.info("Invalid type of user, check User Class")
+            logging.info("Invalid type of bsiness, check Business Class")
 
     def set_metadataId(self, metadataId:int) -> None:
         self.metadataId = metadataId
@@ -69,66 +90,52 @@ class Business:
             sort_keys=True, indent=4)
     
         
-    def save(self)-> None:
+    def refresh(self) -> None:
+        Business.refresh(self)
+        self.address,self.pluscode = self.response['valueRanges'][0]['valueRange']['values'][0][3:5]
+    
+    def save(self) -> None:
         batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
                                     "data": [{"dataFilter": {'developerMetadataLookup': 
                                                             {'metadataId': self.metadataId
                                                             }},
                                     "majorDimension": 'ROWS',
-                                    "values": [[self.mmsUserID, self.firstName, self.lastName, self.telegramUserID, self.access]
+                                    "values": [[self.mmsbusinessId, self.telegramChatId, self.businessName, self.address, self.pluscode]
                                                 ]}]}
             
-        self.all_users.sheet.values().batchUpdateByDataFilter(spreadsheetId=self.all_users.SAMPLE_SPREADSHEET_ID, body=batch_datafilter_update).execute()
-        
-    def refresh(self) -> None:
-        batch_request_get = {
-
-            'data_filters': [{'developerMetadataLookup': {'metadataId': self.metadataId
-                                                          }}]  # TODO: Update placeholder value.
-
-        }
-        
-        response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SAMPLE_SPREADSHEET_ID, body = batch_request_get).execute()
-        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
-        
+        Business.all_businesses.sheet.values().batchUpdateByDataFilter(spreadsheetId=Business.all_businesses.SPREADSHEET_ID, body=batch_datafilter_update).execute()
 
 
-class AdminUser(User):
+class WholesaleBusiness(Business):
     def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
         try:
-            self.firstName:str = df[1]['First Name']
+            self.mmsbusinessId = df[1]['MMS Business ID']
         except:
-            self.firstName:str = str()
-            
-        try: 
-            self.lastName:str = df[1]['Last Name']
-        except:
-            self.lastName:str = str()
+            self.mmsbusinessId = None
             
         try:
-            self.mmsUserID:str = df[1]['MMS UserID']
+            self.telegramChatId:str = df[1]['Telegram Chat ID']
         except:
-            self.mmsUserID:str = str()
-            
-        try:
-            self.telegramUserID:str = df[1]['Telegram UserID']
-        except:
-            self.telegramUserID:str = str()
+            self.telegramChatId:str = None
         
         try:
-            self.access:str = df[1]['Access']  
+            self.businessName = df[1]['Business Name']
         except:
-            self.access:str = str()    
-        
+            self.businessName = None
         try:
-            self.sheetID = sheetID
+            self.address = df[1]['Address']
         except:
-            self.sheetID = None
+            self.address = None
+        try:
+            self.pluscode = df[1]['Plus Code']
+        except:
+            self.pluscode = None
+                
             
         self.metadataId = None
         
         if sheetID != None:
-            User.all_users.request_list += [{"createDeveloperMetadata": \
+            Business.all_businesses.request_list += [{"createDeveloperMetadata": \
                                                  {"developerMetadata": {
                                                      "metadataKey": "sheetID"+f"{df[0]+1}",
                                                      "location" : {"dimensionRange":
@@ -140,53 +147,40 @@ class AdminUser(User):
                                                      "visibility": "DOCUMENT"}
                                                          }}]
         
-        User.all_users.append(self)
+        Business.all_businesses.append(self)
         
-        logging.info(f"Created {type(self)} user {self.firstName}")
+        logging.info(f"Created {type(self)} user {self.businessName}")
 
-class WholesaleUser(User):
+class InternalBusiness(Business):
     def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
         try:
-            self.firstName:str = df[1]['First Name']
+            self.mmsbusinessId = df[1]['MMS Business ID']
         except:
-            self.firstName:str = str()
-            
-        try: 
-            self.lastName:str = df[1]['Last Name']
-        except:
-            self.lastName:str = str()
+            self.mmsbusinessId = None
             
         try:
-            self.mmsUserID:str = df[1]['MMS UserID']
+            self.telegramChatId:str = df[1]['Telegram Chat ID']
         except:
-            self.mmsUserID:str = str()
-            
-        try:
-            self.telegramUserID:str = df[1]['Telegram UserID']
-        except:
-            self.telegramUserID:str = str()
+            self.telegramChatId:str = None
         
         try:
-            self.access:str = df[1]['Access']  
+            self.businessName = df[1]['Business Name']
         except:
-            self.access:str = str()    
-        
+            self.businessName = None
         try:
-            self.sheetID = sheetID
+            self.address = df[1]['Address']
         except:
-            self.sheetID = None
-        
+            self.address = None
         try:
-            pass
-            #self.business:Business = BusinessList.search(df[1]['Assigned Business'],"MMS Business ID")[0]
+            self.pluscode = df[1]['Plus Code']
         except:
-            pass
-            #self.business:Business = None
-            
+            self.pluscode = None
+                
+        
         self.metadataId = None
             
         if sheetID != None:
-            User.all_users.request_list += [{"createDeveloperMetadata": \
+            Business.all_businesses.request_list += [{"createDeveloperMetadata": \
                                                  {"developerMetadata": {
                                                      "metadataKey": "sheetID"+f"{df[0]+1}",
                                                      "location" : {"dimensionRange":
@@ -198,6 +192,9 @@ class WholesaleUser(User):
                                                      "visibility": "DOCUMENT"}
                                                          }}]
                 
-        User.all_users.append(self)
+        Business.all_businesses.append(self)
         
-        logging.info(f"Created {type(self)} user {self.firstName}")
+        logging.info(f"Created {type(self)} user {self.businessName}")
+        
+    
+            
