@@ -16,6 +16,8 @@ class UserList(Sheets, list['User']):
                     "sheetID": 1929008158}]
     
     request_list:List = []
+    batch_datafilter:List = []
+    batch_request:List = []
     
     def __init__(self):
         super().__init__(write_sheet=True)
@@ -44,9 +46,34 @@ class UserList(Sheets, list['User']):
         ### Assign metadataID to users
         response = self.sheet.batchUpdate(spreadsheetId=UserList.SPREADSHEET_ID, body={"requests" :UserList.request_list}).execute()
         [user.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for user,reply in zip(User.all_users, response['replies'])]
-        UserList.request_list = []
+        UserList.request_list.clear()
+    
+    def save(self) -> None:
+        #Create datafilters for all the users
+        [user.create_datafilter() for user in self]
         
+        #Make a dictionary for google api
+        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
+                                    "data": UserList.batch_datafilter}
         
+        #Send the request and clear the datafilter
+        User.all_users.sheet.values().batchUpdateByDataFilter(spreadsheetId=User.all_users.SPREADSHEET_ID, body=batch_datafilter_update).execute()
+        User.all_users.batch_datafilter.clear()
+
+    def search(self, userType = None, mmsUserID = None, telegramUserID:str = None, access:str = None, user_toSearch:List = None) -> List:
+        '''This function returns objects that match the value with the given attribute'''
+        if user_toSearch == None:
+            user_toSearch = User.all_users
+        
+        try:
+            search_results = list(filter(lambda z: (userType == None or type(z).__name__ == userType), user_toSearch))
+            search_results = list(filter(lambda z: (access == None or z.access == access), search_results))
+            search_results = list(filter(lambda z: (mmsUserID == None or z.mmsUserID == mmsUserID), search_results))
+            search_results = list(filter(lambda z: (telegramUserID == None or z.telegramUserID == telegramUserID), search_results))
+            return search_results
+        except:
+            raise ValueError("Invalid input for search method in users")
+            return []
 
 class User:
     all_users = UserList()
@@ -76,28 +103,26 @@ class User:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
     
-        
-    def save(self)-> None:
-        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
-                                    "data": [{"dataFilter": {'developerMetadataLookup': 
+    def create_datafilter(self) -> None:
+        User.all_users.batch_datafilter += [{"dataFilter": {'developerMetadataLookup': 
                                                             {'metadataId': self.metadataId
                                                             }},
                                     "majorDimension": 'ROWS',
                                     "values": [[self.mmsUserID, self.firstName, self.lastName, self.telegramUserID, self.access]
-                                                ]}]}
-            
-        self.all_users.sheet.values().batchUpdateByDataFilter(spreadsheetId=self.all_users.SAMPLE_SPREADSHEET_ID, body=batch_datafilter_update).execute()
+                                                ]}]
         
-    def refresh(self) -> None:
-        batch_request_get = {
-
-            'data_filters': [{'developerMetadataLookup': {'metadataId': self.metadataId
-                                                          }}]  # TODO: Update placeholder value.
-
-        }
+    def save(self)-> None:
+        self.create_datafilter()
+        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
+                                    "data": User.all_users.batch_datafilter}
         
-        self.response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
-        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = self.response['valueRanges'][0]['valueRange']['values'][0][0:5]
+        User.all_users.sheet.values().batchUpdateByDataFilter(spreadsheetId=User.all_users.SPREADSHEET_ID, body=batch_datafilter_update).execute()
+        User.all_users.batch_datafilter.clear()
+        
+    def create_refresh(self) -> None:
+        User.all_users.batch_request += [{'developerMetadataLookup': {'metadataId': self.metadataId
+                                                      }}]
+        
         
 
 
@@ -151,10 +176,21 @@ class AdminUser(User):
         User.all_users.append(self)
         
         logging.info(f"Created {type(self)} user {self.firstName}")
+        
+    def refresh(self) -> None:
+        self.create_refresh()
+        batch_request_get = {
 
+            'data_filters': User.all_users.batch_request  # TODO: Update placeholder value.
+
+        }
+        
+        response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
+        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+        User.all_users.batch_request.clear()
 
 class NonAdminUser(User):
-    def __init(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
         try:
             self.firstName:str = df[1]['First Name']
         except:
@@ -208,11 +244,23 @@ class NonAdminUser(User):
         User.all_users.append(self)
         
         logging.info(f"Created {type(self)} user {self.firstName}")
+        
+        def refresh(self) -> None:
+            self.create_refresh()
+            batch_request_get = {
 
-class InternalUser(User):
-    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
-        super().__init__(self, userType, sheetID, df)
+                'data_filters': User.all_users.batch_request  # TODO: Update placeholder value.
 
-class WholesaleUser(User):
+            }
+            
+            response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
+            self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+            User.all_users.batch_request.clear()
+
+class InternalUser(NonAdminUser):
     def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
-        super().__init__(self, userType, sheetID, df)
+        super().__init__(userType, sheetID, df)
+
+class WholesaleUser(NonAdminUser):
+    def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):
+        super().__init__(userType, sheetID, df)

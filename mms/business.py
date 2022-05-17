@@ -13,6 +13,7 @@ class BusinessList(Sheets, list['Business']):
                     "sheetID": 1788602125}]
     
     request_list:List = []
+    batch_datafilter:List = []
     
     def __init__(self):
         super().__init__(write_sheet=True)
@@ -47,7 +48,14 @@ class BusinessList(Sheets, list['Business']):
         # [business.refresh() for business in self]
         # logging.info("Refreshed data for all businesses")
         pass
+    
+    def save(self):
+        [business.create_datafilter() for business in self]
+        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
+                                    "data": BusinessList.batch_datafilter}
         
+        Business.all_businesses.sheet.values().batchUpdateByDataFilter(spreadsheetId=Business.all_businesses.SPREADSHEET_ID, body=batch_datafilter_update).execute()
+        Business.all_businesses.batch_datafilter.clear()
     
     def search(self, businessType = None, mmsbusinessId = None, businessName:str = None, business_toSearch:List = None) -> List:
         '''This function returns objects that match the value with the given attribute'''
@@ -94,17 +102,22 @@ class Business:
         Business.refresh(self)
         self.address,self.pluscode = self.response['valueRanges'][0]['valueRange']['values'][0][3:5]
     
-    def save(self) -> None:
-        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
-                                    "data": [{"dataFilter": {'developerMetadataLookup': 
+    def create_datafilter(self) -> None:
+        Business.all_businesses.batch_datafilter += [{"dataFilter": {'developerMetadataLookup': 
                                                             {'metadataId': self.metadataId
                                                             }},
                                     "majorDimension": 'ROWS',
                                     "values": [[self.mmsbusinessId, self.telegramChatId, self.businessName, self.address, self.pluscode]
-                                                ]}]}
-            
+                                                ]}]
+    
+    def save(self)-> None:
+        self.create_datafilter()
+        batch_datafilter_update = {"valueInputOption": 'USER_ENTERED',
+                                    "data": Business.all_businesses.batch_datafilter}
+        
         Business.all_businesses.sheet.values().batchUpdateByDataFilter(spreadsheetId=Business.all_businesses.SPREADSHEET_ID, body=batch_datafilter_update).execute()
-
+        Business.all_businesses.batch_datafilter.clear()
+            
 
 class WholesaleBusiness(Business):
     def __init__(self, userType:str = None, sheetID:int = None, df:Tuple[int, Series] = (None, Series(dtype=(float)))):

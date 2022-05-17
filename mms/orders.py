@@ -2,7 +2,7 @@ from typing import Optional,List
 import logging 
 from pandas import DataFrame
 
-#from .businesses import Business
+from .businesses import Business
 from .users import User
 from .products import Product
 from .ext import Sheets
@@ -13,22 +13,39 @@ class OrderList(Sheets, list['Order']):
     sheet_info = [{"Range": "04/2022!A1:S",
                     "sheetID": 0}]
     
+    request_list:List = []
+    
     def __init__(self):
         super().__init__(write_sheet=True)
+        #Delete all previous metadata from users sheets, reference to Wholesale and Admin sections
+        logging.info("Initializing users from user sheet")
+        delete_all = {"requests" : [
+            {"deleteDeveloperMetadata":{"dataFilter": {\
+            "developerMetadataLookup": {"metadataLocation": {"sheetId":sheets["sheetID"]}}}}} for sheets in self.sheet_info 
+            ]}
+        self.sheet.batchUpdate(spreadsheetId=OrderList.SPREADSHEET_ID, body=delete_all).execute()
+        logging.info("Initialised orders from order sheet")
     
     def load(self):
         if OrderList.__len__ != 0:
             OrderList.clear(self)
             logging.info("Reloaded product list")
         
-        #From sheets obtain results from sheet
         self.results = Sheets.load(self)
         
-        df = DataFrame(self.results['valueRanges'][0]['values'][1:], columns = self.results['valueRanges'][0]['values'][0])
+        #Create a list of objects with users in them
+        [[Order(OrderList.sheet_info[index]['Range'], OrderList.sheet_info[index]['sheetID'], sf_order)
+          for sf_order in df_order.iterrows()] 
+             for index, df_order in [(self.results['valueRanges'].index(orderRange),DataFrame(orderRange['values'][1:], columns = orderRange['values'][0])) 
+                                       for orderRange in self.results['valueRanges']]]
         
+        ### Assign metadataID to users
+        response = self.sheet.batchUpdate(spreadsheetId=OrderList.SPREADSHEET_ID, body={"requests" :OrderList.request_list}).execute()
+        [order.set_metadataId(reply['createDeveloperMetadata']['developerMetadata']['metadataId']) for order,reply in zip(Order.all_orders, response['replies'])]
+        OrderList.request_list.clear()
         
 
-class Order:
+class Order(list("OrderItem")):
     all_orders = OrderList()
     
     def __init__(self):
