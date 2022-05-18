@@ -10,8 +10,10 @@ from .ext import Sheets
 class OrderList(Sheets, list['Order']):
     
     SPREADSHEET_ID = "1OfaG4VCbM834Fe4TdtIjQF7jcETBNt5dKNbzEDrftLk"
-    sheet_info = [{"Range": "04/2022!A1:S",
-                    "sheetID": 0}]
+    sheet_info = [{"Range": "Recurring",
+                    "sheetID": 0},
+                  {"Range": "05/2022!A1:S",
+                   "sheetID": 673559976}]
     
     request_list:List = []
     
@@ -47,10 +49,9 @@ class OrderList(Sheets, list['Order']):
 
 class Order(list("OrderItem")):
     all_orders = OrderList()
-    
     def __init__(self):
         pass
-    
+
 class OrderItem:
     
     def __init__(self):
@@ -63,3 +64,5 @@ class OrderItem:
     
 
 
+
+    
