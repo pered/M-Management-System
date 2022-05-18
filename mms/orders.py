@@ -57,7 +57,6 @@ class Order(list("OrderItem")):
         self.business:Business = None
         self.deliveryDate = None
         self.returnedPackages:str = None
-        pass
     
     def set_metadataId(self, metadataId:int) -> None:
         self.metadataId = metadataId
