@@ -50,17 +50,38 @@ class OrderList(Sheets, list['Order']):
 class Order(list("OrderItem")):
     all_orders = OrderList()
     def __init__(self):
-        pass
-
-class OrderItem:
-    
-    def __init__(self):
         self.orderNo = None
         self.orderDate = None
         self.orderId = None
         self.user:User = None
         self.business:Business = None
+        self.deliveryDate = None
+        self.returnedPackages:str = None
+        pass
+    
+    def set_metadataId(self, metadataId:int) -> None:
+        self.metadataId = metadataId
+
+    @property
+    def metadataId(self) -> int:
+        return self._metadataId
+        
+    @metadataId.setter
+    def metadataId(self, metadataId:int) -> None:
+        self._metadataId = metadataId
+    
+
+class OrderItem:
+    
+    def __init__(self):
         self.product:Product = None
+        self.quantity = None
+        self.deliveryNote:bool = False
+        self.lotNo = None
+        self.packaging:str = None
+        self.packaged:bool = None
+
+        
     
 
 
