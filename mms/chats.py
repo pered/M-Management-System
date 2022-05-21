@@ -7,25 +7,19 @@ import string
 from telegram import Update, Chat, ChatMemberUpdated, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import CallbackContext, CommandHandler,ChatMemberHandler, CallbackQueryHandler, ConversationHandler,MessageHandler, Filters
 
-from .userslist import UserList
-from .businesslist import BusinessList
-from .settingslist import SettingsCFG
+from .users import User
+from .business import Business
+from .orders import Order
+from .settings import SettingsCFG
 from .bot import HandlerList
 
 
 
 class Chats:
-    businesses:BusinessList = BusinessList
-    users:UserList = UserList
-    
-    
     def __init__(self):
         pass
         
     ### Test functions ###
-    
-    def print_RegisteredUsers(self, update: Update, context: CallbackContext) -> None:
-        update.message.reply_text([x.toJSON() for x in Chats.users.userList])
     
     def print_chatId(self,update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
@@ -38,7 +32,8 @@ class Chats:
     
     ### Actual Programme Functions ###
     
-    def send_help(self,update: Update, context: CallbackContext) -> None:
+    @classmethod
+    def send_help(cls,update: Update, context: CallbackContext) -> None:
         update.message.reply_text("Remind me to finish this!")
         
     #Admin Commands    
@@ -174,26 +169,23 @@ class Chats:
 
 
     def load(self):
-        #Load data
-        Chats.businesses.load()
-        Chats.users.load()
         
         #Load Handlers
-        HandlerList(CommandHandler("chat_id", self.print_chatId))
-        HandlerList(CommandHandler("user_id", self.print_userId))
-        HandlerList(CommandHandler('userlist', self.print_RegisteredUsers))
+        # HandlerList(CommandHandler("chat_id", Chats.print_chatId))
+        # HandlerList(CommandHandler("user_id", Chats.print_userId))
+        # HandlerList(CommandHandler('userlist', Chats.print_RegisteredUsers))
         
         ### Actual Programme Handlers ###
         HandlerList(CommandHandler("help", self.send_help))
         
         #Admin Handlers
-        HandlerList(CommandHandler("reload_users", self.reload_Users))
+        #HandlerList(CommandHandler("reload_users", Chats.reload_Users))
         
         #Wholesale Handlers
-        HandlerList(ConversationHandler(entry_points=[
-                                            CommandHandler('register', self.register)],
-                                        states={"REGISTER":[
-                                            CallbackQueryHandler(self.register_query)]},
-                                        fallbacks=[]))     
+        #HandlerList(ConversationHandler(entry_points=[
+        #                                    CommandHandler('register', Chats.register)],
+        #                                states={"REGISTER":[
+        #                                    CallbackQueryHandler(Chats.register_query)]},
+        #                                fallbacks=[]))     
         
         #CommandHandler('order', self.order)],

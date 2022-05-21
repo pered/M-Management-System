@@ -5,19 +5,19 @@ import logging
 
 class ProductList(Sheets, list['Product']):
     SPREADSHEET_ID = "1mCJyUwHad0RBj14d8pvYC1EaCd4mHNwzkDKiUYTcLy4"
-    sheet_info = [{"Range": "Coffee",
+    sheet_info = [{"Range": "COFFEE",
                     "sheetID": 0},
-                  {"Range": "Sugar",
+                  {"Range": "SUGAR",
                     "sheetID": 1980308451},
-                  {"Range" : "Beverages", 
+                  {"Range" : "BEVERAGES", 
                     "sheetID": 366404389}]
 
     def __init__(self):
-        super(Sheets,self).__init__()
+        Sheets.__init__(self)
     
     def load(self):
         #If productlist has values in itself, then delete them all and reload
-        if ProductList.__len__ != 0:
+        if Product.all_products.__len__() != 0:
             ProductList.clear(self)
             logging.info("Reloaded product list")
         
@@ -31,16 +31,17 @@ class ProductList(Sheets, list['Product']):
                                        for productRange in self.results['valueRanges']]]
     
     
-    def search(self, productType_search = None, displayName_search:str = None, weight_search:float = None, product_toSearch:List = None) -> List:
+    def search(self, productType = None, displayName:str = None, weight:float = None, grind:str = None, product_toSearch:List = None) -> List:
         '''This function returns objects that match the value with the given attribute'''
         if product_toSearch == None:
-            product_toSearch = Product().all_products
+            product_toSearch = Product.all_products
         
         try:
-            search_results = list(filter(lambda z: (productType_search == None or z.productType == productType_search), product_toSearch))
-            search_results = list(filter(lambda z: (displayName_search == None or z.displayName == displayName_search), search_results))
-            if weight_search != None:
-                search_results = list(filter(lambda z: (weight_search == None or z.weight == weight_search), list(filter(lambda x: hasattr(x, "weight"), search_results))))
+            search_results = list(filter(lambda z: (productType == None or z.productType == productType), product_toSearch))
+            search_results = list(filter(lambda z: (displayName == None or z.displayName == displayName), search_results))
+            if weight != None:
+                search_results = list(filter(lambda z: (weight == None or z.weight == weight), list(filter(lambda x: hasattr(x, "weight"), search_results))))
+            search_results = list(filter(lambda z: (grind == None or z.grind == grind), search_results))
             return search_results
         except:
             raise ValueError("Tried to seach for an invalid weight in products")
@@ -51,13 +52,13 @@ class Product:
     all_products = ProductList()
     
     def __init__(self, productType:str = None,df:Tuple[int, Series] = (None, Series(dtype=(float)))):
-        if productType == 'Coffee':
+        if productType == 'COFFEE':
             Coffee(productType, df)
             
-        elif productType == 'Sugar':
+        elif productType == 'SUGAR':
             Sugar(productType, df)
             
-        elif productType == 'Beverages':
+        elif productType == 'BEVERAGES':
             Beverages(productType, df)
             
         

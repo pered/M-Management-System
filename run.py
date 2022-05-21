@@ -1,29 +1,40 @@
 import logging
 from mms.bot import Bot
 from mms.chats import Chats
+from mms.users import User
+from mms.business import Business
+from mms.orders import Order
+from mms.product import Product
+from mms.settings import SettingsCFG
+
 from telegram.ext import CallbackContext
 from telegram import Update
 import json
 
-from mms.settingslist import SettingsCFG
+
     
 
 def main() -> None:
 
+    logger = logging.getLogger()
     logging.basicConfig(level=logging.INFO, 
              format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.getLogger(__name__)
+    logger.setLevel(logging.NOTSET)
     
     #Initialise modules
     mms_Bot = Bot()
+    mms_Chats = Chats()
     #Load the settings from the settings sheet in order to allow the dependent 
     #classes to initialise correctly (e.g. Chats)
     SettingsCFG.load()
-    mms_Chats = Chats()
+    Product.all_products.load()
+    Business.all_businesses.load()
+    User.all_users.load()
+    Order.all_orders.load()
     
-    #Load Data from modules
-    mms_Chats.load()
     mms_Bot.load()
+    mms_Chats.load()
     
     #Start bot
     mms_Bot.start()

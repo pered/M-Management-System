@@ -27,7 +27,7 @@ class BusinessList(Sheets, list['Business']):
         logging.info("Initialised businesses from business sheet")
         
     def load(self):
-        if BusinessList.__len__ != 0:
+        if Business.all_businesses.__len__() != 0:
             BusinessList.clear(self)
             logging.info("Reloaded business list")
         

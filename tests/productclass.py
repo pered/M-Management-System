@@ -1,3 +1,3 @@
-from mms.products import ProductList, Product, Coffee
+from mms.product import ProductList, Product, Coffee
 
-Product().all_products.load()
+Product.all_products.load()

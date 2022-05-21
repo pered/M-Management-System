@@ -31,7 +31,7 @@ class UserList(Sheets, list['User']):
         logging.info("Initialised users from user sheet")
         
     def load(self):
-        if UserList.__len__ != 0:
+        if User.all_users.__len__() != 0:
             UserList.clear(self)
             logging.info("Reloaded product list")
         
@@ -60,7 +60,7 @@ class UserList(Sheets, list['User']):
         User.all_users.sheet.values().batchUpdateByDataFilter(spreadsheetId=User.all_users.SPREADSHEET_ID, body=batch_datafilter_update).execute()
         User.all_users.batch_datafilter.clear()
 
-    def search(self, userType = None, mmsUserID = None, telegramUserID:str = None, access:str = None, user_toSearch:List = None) -> List:
+    def search(self, userType = None, mmsUserId = None, telegramUserID:str = None, access:str = None, user_toSearch:List = None) -> List:
         '''This function returns objects that match the value with the given attribute'''
         if user_toSearch == None:
             user_toSearch = User.all_users
@@ -68,7 +68,7 @@ class UserList(Sheets, list['User']):
         try:
             search_results = list(filter(lambda z: (userType == None or type(z).__name__ == userType), user_toSearch))
             search_results = list(filter(lambda z: (access == None or z.access == access), search_results))
-            search_results = list(filter(lambda z: (mmsUserID == None or z.mmsUserID == mmsUserID), search_results))
+            search_results = list(filter(lambda z: (mmsUserId == None or z.mmsUserId == mmsUserId), search_results))
             search_results = list(filter(lambda z: (telegramUserID == None or z.telegramUserID == telegramUserID), search_results))
             return search_results
         except:
@@ -108,7 +108,7 @@ class User:
                                                             {'metadataId': self.metadataId
                                                             }},
                                     "majorDimension": 'ROWS',
-                                    "values": [[self.mmsUserID, self.firstName, self.lastName, self.telegramUserID, self.access]
+                                    "values": [[self.mmsUserId, self.firstName, self.lastName, self.telegramUserID, self.access]
                                                 ]}]
         
     def save(self)-> None:
@@ -139,9 +139,9 @@ class AdminUser(User):
             self.lastName:str = str()
             
         try:
-            self.mmsUserID:str = df[1]['MMS UserID']
+            self.mmsUserId:str = df[1]['MMS UserID']
         except:
-            self.mmsUserID:str = str()
+            self.mmsUserId:str = str()
             
         try:
             self.telegramUserID:str = df[1]['Telegram UserID']
@@ -186,7 +186,7 @@ class AdminUser(User):
         }
         
         response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
-        self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+        self.mmsUserId,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
         User.all_users.batch_request.clear()
 
 class NonAdminUser(User):
@@ -202,9 +202,9 @@ class NonAdminUser(User):
             self.lastName:str = str()
             
         try:
-            self.mmsUserID:str = df[1]['MMS UserID']
+            self.mmsUserId:str = df[1]['MMS UserID']
         except:
-            self.mmsUserID:str = str()
+            self.mmsUserId:str = str()
             
         try:
             self.telegramUserID:str = df[1]['Telegram UserID']
@@ -254,7 +254,7 @@ class NonAdminUser(User):
             }
             
             response =  User.all_users.sheet.values().batchGetByDataFilter(spreadsheetId= User.all_users.SPREADSHEET_ID, body = batch_request_get).execute()
-            self.mmsUserID,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
+            self.mmsUserId,self.firstName,self.lastName,self.telegramUserID,self.access = response['valueRanges'][0]['valueRange']['values'][0][0:5]
             User.all_users.batch_request.clear()
 
 class InternalUser(NonAdminUser):
