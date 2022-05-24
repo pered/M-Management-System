@@ -45,10 +45,12 @@ class Chats:
         '''This function reloads all the users after there have been updates to\
             the data files on the cloud storage'''
         #Check if user is a super admin to perform command
-        user:List = User.all_users.search(telegramUserID=str(update.message.from_user.id))
-        if [True for x in user if x.access == "SuperAdmin"]:
+        usermatch:List = User.all_users.search(userType="SuperAdmin", telegramUserID=str(update.message.from_user.id))
+        if len(usermatch) == 1:
             User.all_users.load()
             update.message.reply_text("Reloaded all users!")
+        elif len(usermatch) > 1:
+            raise ValueError("Too many user matches for user rights")
         else:
             update.message.reply_text("You do not have admin rights")
     
@@ -59,54 +61,58 @@ class Chats:
         '''Function that provides the ability for wholesale to register in a previously
         created wholesale user slot in cloud server database'''
         
-        #Check if user is registered as anything
-        usermatch_telegramId:List = cls.users.search(update.message.from_user.id, "Telegram UserID")
-        print(usermatch_telegramId)
-        #If the user is not registered then provide registration options with
-        #businesses that have been created with "Register" access in cloud server
         
-        if len(usermatch_telegramId) < SettingsCFG.max_reg_per_user:
-            #If the amount of links between the telegram user id is less than the maximum allowed
-            #we proceed to refresh those users to check if their status has changed
+        print(update.message)
+        
+        
+        # #Check if user is registered as anything
+        # usermatch_telegramId:List = cls.users.search(update.message.from_user.id, "Telegram UserID")
+        # print(usermatch_telegramId)
+        # #If the user is not registered then provide registration options with
+        # #businesses that have been created with "Register" access in cloud server
+        
+        # if len(usermatch_telegramId) < SettingsCFG.max_reg_per_user:
+        #     #If the amount of links between the telegram user id is less than the maximum allowed
+        #     #we proceed to refresh those users to check if their status has changed
             
-            [users.refresh() for users in usermatch_telegramId]
-            pending_users:List = cls.users.search("Pending Approval", "Access", usermatch_telegramId)
+        #     [users.refresh() for users in usermatch_telegramId]
+        #     pending_users:List = cls.users.search("Pending Approval", "Access", usermatch_telegramId)
     
-            if [True for user in pending_users if user.access == 'Pending Approval']:
+        #     if [True for user in pending_users if user.access == 'Pending Approval']:
                 
-                #and if any of the users returned are pending approval we tell them to wait
+        #         #and if any of the users returned are pending approval we tell them to wait
                 
-                update.message.reply_text('We are getting your registration approved')
-                logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is awaiting approval!')
-                return ConversationHandler.END
+        #         update.message.reply_text('We are getting your registration approved')
+        #         logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} is awaiting approval!')
+        #         return ConversationHandler.END
             
-            else:
+        #     else:
                 
-                #and if the users are not waiting to be approved and under the 
-                #limit we allow them to register for some open spots
+        #         #and if the users are not waiting to be approved and under the 
+        #         #limit we allow them to register for some open spots
                 
-                available_reg:List = Chats.users.search("Register", "Access")
+        #         available_reg:List = Chats.users.search("Register", "Access")
     
-                keyboard = [[InlineKeyboardButton(x.business.businessName, callback_data= x.business.businessName) \
-                            for x in available_reg],
-                            [InlineKeyboardButton("Cancel", callback_data='Cancel')],]
+        #         keyboard = [[InlineKeyboardButton(x.business.businessName, callback_data= x.business.businessName) \
+        #                     for x in available_reg],
+        #                     [InlineKeyboardButton("Cancel", callback_data='Cancel')],]
                     
-                reply_markup = InlineKeyboardMarkup(keyboard)
-                update.message.reply_text('Which cafe do you belong to?:', reply_markup=reply_markup)
+        #         reply_markup = InlineKeyboardMarkup(keyboard)
+        #         update.message.reply_text('Which cafe do you belong to?:', reply_markup=reply_markup)
              
-                return "REGISTER"
+        #         return "REGISTER"
         
-        #Otherwise we tell them they are over the limit and tell them to stop
+        # #Otherwise we tell them they are over the limit and tell them to stop
         
-        elif len(usermatch_telegramId) >= SettingsCFG.max_reg_per_user:
-            update.message.reply_text('You have reached the maximum allowed registrations!')
-            logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} has reached maximum registrations!')
-            return ConversationHandler.END
+        # elif len(usermatch_telegramId) >= SettingsCFG.max_reg_per_user:
+        #     update.message.reply_text('You have reached the maximum allowed registrations!')
+        #     logging.info(f'User {update.message.from_user.name} with Telegram ID {update.message.from_user.id} has reached maximum registrations!')
+        #     return ConversationHandler.END
         
-        #As of writing this I am tired and not able to think of cases that would fill this
-        else:
-            logging.info('Check register definition for unusual registration case')
-            return ConversationHandler.END
+        # #As of writing this I am tired and not able to think of cases that would fill this
+        # else:
+        #     logging.info('Check register definition for unusual registration case')
+        #     return ConversationHandler.END
         
 
     def register_query(self, update: Update, context: CallbackContext) -> int:
@@ -185,6 +191,10 @@ class Chats:
         HandlerList(CommandHandler("reload_users", Chats.reload_users))
         
         #Wholesale Handlers
+        HandlerList(ConversationHandler(entry_points=[
+                                            CommandHandler('register', Chats.register)],
+                                        states={},
+                                        fallbacks=[]))     
         #HandlerList(ConversationHandler(entry_points=[
         #                                    CommandHandler('register', Chats.register)],
         #                                states={"REGISTER":[
