@@ -30,7 +30,7 @@ class OrderList(Sheets, list['Order']):
     
     def load(self):
         if Order.all_orders.__len__() != 0:
-            OrderList.clear(self)
+            Order.all_orders.clear()
             logging.info("Reloaded order list")
         
         self.results = Sheets.load(self)

@@ -32,8 +32,8 @@ class UserList(Sheets, list['User']):
         
     def load(self):
         if User.all_users.__len__() != 0:
-            UserList.clear(self)
-            logging.info("Reloaded product list")
+            User.all_users.clear()
+            logging.info("Reloaded user list")
         
         self.results = Sheets.load(self)
         
@@ -74,6 +74,11 @@ class UserList(Sheets, list['User']):
         except:
             raise ValueError("Invalid input for search method in users")
             return []
+    
+    def print(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)
+        
 
 class User:
     all_users = UserList()

@@ -28,7 +28,7 @@ class BusinessList(Sheets, list['Business']):
         
     def load(self):
         if Business.all_businesses.__len__() != 0:
-            BusinessList.clear(self)
+            Business.all_businesses.clear()
             logging.info("Reloaded business list")
         
         self.results = Sheets.load(self)

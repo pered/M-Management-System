@@ -21,33 +21,36 @@ class Chats:
         
     ### Test functions ###
     
-    def print_chatId(self,update: Update, context: CallbackContext) -> None:
+    def print_chatId(update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
         data:Chat = update._effective_chat
         update.message.reply_text(data.id)
     
-    def print_userId(self,update: Update, context: CallbackContext) -> None:
+    def print_userId(update: Update, context: CallbackContext) -> None:
         """Send a message when the command /start is issued."""
         print(update.message.chat.id)
+        
+    def print_userList(update: Update, context: CallbackContext) -> None:
+        print(User.all_users.print())
     
     ### Actual Programme Functions ###
-    
+
     @classmethod
-    def send_help(cls,update: Update, context: CallbackContext) -> None:
+    def send_help(update: Update, context: CallbackContext) -> None:
         update.message.reply_text("Remind me to finish this!")
         
     #Admin Commands    
     
-    def reload_Users(cls, update: Update, context: CallbackContext) -> None:
+    def reload_users(update: Update, context: CallbackContext) -> None:
         '''This function reloads all the users after there have been updates to\
             the data files on the cloud storage'''
         #Check if user is a super admin to perform command
-        user:List = cls.users.search(update.message.from_user.id, "Telegram UserID")
+        user:List = User.all_users.search(telegramUserID=str(update.message.from_user.id))
         if [True for x in user if x.access == "SuperAdmin"]:
-            cls.users.reload_all()
+            User.all_users.load()
             update.message.reply_text("Reloaded all users!")
         else:
-            update.message.reply_text("You are not worthy...")
+            update.message.reply_text("You do not have admin rights")
     
    #Wholesale commands 
    
@@ -168,18 +171,18 @@ class Chats:
 
 
 
-    def load(self):
+    def load():
         
         #Load Handlers
-        # HandlerList(CommandHandler("chat_id", Chats.print_chatId))
-        # HandlerList(CommandHandler("user_id", Chats.print_userId))
-        # HandlerList(CommandHandler('userlist', Chats.print_RegisteredUsers))
+        HandlerList(CommandHandler("chat_id", Chats.print_chatId))
+        HandlerList(CommandHandler("user_id", Chats.print_userId))
+        HandlerList(CommandHandler('print_userlist', Chats.print_userList))
         
         ### Actual Programme Handlers ###
-        HandlerList(CommandHandler("help", self.send_help))
+        HandlerList(CommandHandler("help", Chats.send_help))
         
         #Admin Handlers
-        #HandlerList(CommandHandler("reload_users", Chats.reload_Users))
+        HandlerList(CommandHandler("reload_users", Chats.reload_users))
         
         #Wholesale Handlers
         #HandlerList(ConversationHandler(entry_points=[

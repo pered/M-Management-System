@@ -18,7 +18,7 @@ class ProductList(Sheets, list['Product']):
     def load(self):
         #If productlist has values in itself, then delete them all and reload
         if Product.all_products.__len__() != 0:
-            ProductList.clear(self)
+            Product.all_products.clear()
             logging.info("Reloaded product list")
         
         #From sheets obtain results from sheet

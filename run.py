@@ -24,7 +24,6 @@ def main() -> None:
     
     #Initialise modules
     mms_Bot = Bot()
-    mms_Chats = Chats()
     #Load the settings from the settings sheet in order to allow the dependent 
     #classes to initialise correctly (e.g. Chats)
     SettingsCFG.load()
@@ -33,8 +32,8 @@ def main() -> None:
     User.all_users.load()
     Order.all_orders.load()
     
+    Chats.load()
     mms_Bot.load()
-    mms_Chats.load()
     
     #Start bot
     mms_Bot.start()
